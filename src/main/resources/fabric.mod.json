@@ -3,13 +3,13 @@
 	"id": "lycoris-awakening",
 	"version": "${version}",
 	"name": "Lycoris Awakening",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "This mod adds overhauls and content expansion to the game.",
 	"authors": [
 		"Me!"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/rin-naumann/Lycoris-Awakening-1.21.x"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/lycoris-awakening/icon.png",
@@ -20,6 +20,9 @@
 		],
 		"fabric-datagen": [
 			"com.lycoris.modid.LycorisAwakeningDataGenerator"
+		],
+		"client": [
+			"com.lycoris.modid.LycorisAwakeningClient"
 		]
 	},
 	"mixins": [
