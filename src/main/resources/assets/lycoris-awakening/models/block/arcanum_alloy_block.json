@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "lycoris-awakening:block/arcanum_alloy_block"
+  }
+}

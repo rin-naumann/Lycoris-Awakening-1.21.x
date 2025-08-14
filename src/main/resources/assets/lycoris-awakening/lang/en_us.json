@@ -1,4 +1,9 @@
 {
   "item.lycoris-awakening.arcanum_alloy" : "Arcanum Alloy",
-  "item.lycoris-awakening.lycorite" : "Lycorite"
+  "item.lycoris-awakening.lycorite" : "Lycorite",
+
+  "block.lycoris-awakening.arcanum_alloy_block" : "Arcanum Alloy Block",
+
+  "itemgroup.lycoris-awakening.lycoris_awakening_items" : "Lycoris Awakening Items",
+  "itemgroup.lycoris-awakening.lycoris_awakening_blocks" : "Lycoris Awakening Blocks"
 }
