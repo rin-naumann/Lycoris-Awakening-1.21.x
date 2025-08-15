@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_lycorite_ore": {
+      "conditions": {
+        "items": [
+          {
+            "items": "lycoris-awakening:lycorite_ore"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "minecraft:lycorite_petal_from_smelting_lycorite_ore"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_lycorite_ore"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "minecraft:lycorite_petal_from_smelting_lycorite_ore"
+    ]
+  }
+}

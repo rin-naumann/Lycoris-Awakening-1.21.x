@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_blood_diamond": {
+      "conditions": {
+        "items": [
+          {
+            "items": "lycoris-awakening:blood_diamond"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_lycorite_petal": {
+      "conditions": {
+        "items": [
+          {
+            "items": "lycoris-awakening:lycorite_petal"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "lycoris-awakening:lycorite"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_blood_diamond",
+      "has_lycorite_petal"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "lycoris-awakening:lycorite"
+    ]
+  }
+}

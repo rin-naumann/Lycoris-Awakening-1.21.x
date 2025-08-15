@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "lycoris-awakening:blood_diamond"
+    },
+    {
+      "item": "lycoris-awakening:blood_diamond"
+    },
+    {
+      "item": "lycoris-awakening:blood_diamond"
+    },
+    {
+      "item": "lycoris-awakening:blood_diamond"
+    },
+    {
+      "item": "lycoris-awakening:lycorite_petal"
+    },
+    {
+      "item": "lycoris-awakening:lycorite_petal"
+    },
+    {
+      "item": "lycoris-awakening:lycorite_petal"
+    },
+    {
+      "item": "lycoris-awakening:lycorite_petal"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "lycoris-awakening:lycorite"
+  }
+}

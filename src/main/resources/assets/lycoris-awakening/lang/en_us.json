@@ -1,8 +1,12 @@
 {
   "item.lycoris-awakening.arcanum_alloy" : "Arcanum Alloy",
   "item.lycoris-awakening.lycorite" : "Lycorite",
+  "item.lycoris-awakening.lycorite_petal" : "Lycorite Petal",
+  "item.lycoris-awakening.life_infuser" : "Life Infuser",
+  "item.lycoris-awakening.blood_diamond" : "Blood Diamond",
 
   "block.lycoris-awakening.arcanum_alloy_block" : "Arcanum Alloy Block",
+  "block.lycoris-awakening.lycorite_ore" : "Lycorite Ore",
 
   "itemgroup.lycoris-awakening.lycoris_awakening_items" : "Lycoris Awakening Items",
   "itemgroup.lycoris-awakening.lycoris_awakening_blocks" : "Lycoris Awakening Blocks"

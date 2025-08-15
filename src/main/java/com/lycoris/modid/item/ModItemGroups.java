@@ -20,6 +20,9 @@ public class ModItemGroups {
                     .entries((displayContext, entries) -> {
                         entries.add(ModItems.LYCORITE);
                         entries.add(ModItems.ARCANUM_ALLOY);
+                        entries.add(ModItems.LYCORITE_PETAL);
+                        entries.add(ModItems.BLOOD_DIAMOND);
+                        entries.add(ModItems.LIFE_INFUSER);
 
                     }).build());
 
@@ -30,6 +33,7 @@ public class ModItemGroups {
                     .displayName(Text.translatable("itemgroup.lycoris-awakening.lycoris_awakening_blocks"))
                     .entries((displayContext, entries) -> {
                         entries.add(ModBlocks.ARCANUM_ALLOY_BLOCK);
+                        entries.add(ModBlocks.LYCORITE_ORE);
 
                     }).build());
 

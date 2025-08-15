@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    { "item": "lycoris-awakening:arcanum_alloy_block"}
+    {
+      "item": "lycoris-awakening:arcanum_alloy_block"
+    }
   ],
   "result": {
     "count": 9,

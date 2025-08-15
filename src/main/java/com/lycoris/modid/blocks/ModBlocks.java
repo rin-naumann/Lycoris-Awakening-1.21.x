@@ -21,6 +21,13 @@ public class ModBlocks {
             .sounds(BlockSoundGroup.METAL)
     ));
 
+    public static final Block LYCORITE_ORE = registerBlock("lycorite_ore", new Block(AbstractBlock.Settings.create()
+            .strength(4f)
+            .requiresTool()
+            .sounds(BlockSoundGroup.SOUL_SOIL)
+
+    ));
+
     private static Block registerBlock(String name, Block block){
         registerBlockItem(name, block);
         return Registry.register(Registries.BLOCK, Identifier.of(LycorisAwakening.MOD_ID, name), block);
@@ -34,8 +41,6 @@ public class ModBlocks {
     public static void registerModBlocks() {
         LycorisAwakening.LOGGER.info("Registering Mod Blocks for " + LycorisAwakening.MOD_ID);
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.BUILDING_BLOCKS).register(entries -> {
-            entries.add(ARCANUM_ALLOY_BLOCK);
-        });
+
     }
 }
