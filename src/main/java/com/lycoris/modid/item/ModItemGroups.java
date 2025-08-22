@@ -37,6 +37,17 @@ public class ModItemGroups {
 
                     }).build());
 
+    public static final ItemGroup LYCORIS_AWAKENING_TOOLS_GROUP = Registry.register(Registries.ITEM_GROUP,
+            Identifier.of(LycorisAwakening.MOD_ID, "lycoris_awakening_blocks"),
+            FabricItemGroup.builder()
+                    .icon(() -> new ItemStack(ModItems.LYCORITE_SWORD))
+                    .displayName(Text.translatable("itemgroup.lycoris-awakening.lycoris_awakening_tools"))
+                    .entries((displayContext, entries) -> {
+                        entries.add(ModItems.LYCORITE_SWORD);
+                        entries.add(ModItems.SANGUINE_SOLILOQUY);
+
+                    }).build());
+
     public static void registerItemGroups(){
         LycorisAwakening.LOGGER.info("Registering Item Groups for " + LycorisAwakening.MOD_ID);
     }

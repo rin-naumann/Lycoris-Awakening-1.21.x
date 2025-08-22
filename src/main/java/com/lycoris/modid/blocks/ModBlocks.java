@@ -15,18 +15,34 @@ import net.minecraft.util.Identifier;
 
 public class ModBlocks {
 
+    // Building Blocks
     public static final Block ARCANUM_ALLOY_BLOCK = registerBlock("arcanum_alloy_block", new Block(AbstractBlock.Settings.create()
             .strength(4f)
             .requiresTool()
             .sounds(BlockSoundGroup.METAL)
     ));
 
+    public static final Block BLIGHTWOOD_LOG = registerBlock("blightwood_log", new Block(AbstractBlock.Settings.create()
+            .strength(4f)
+    ));
+
+    public static final Block BLIGHTWOOD_PLANKS = registerBlock("blightwood_log", new Block(AbstractBlock.Settings.create()
+            .strength(4f)
+    ));
+
+    // Natural Blocks
     public static final Block LYCORITE_ORE = registerBlock("lycorite_ore", new Block(AbstractBlock.Settings.create()
             .strength(4f)
             .requiresTool()
             .sounds(BlockSoundGroup.SOUL_SOIL)
 
     ));
+
+    // Block Entities
+    // -- Arcane Enchanting Table
+    // -- Glyphing Table
+    // -- Arcanum Charging Station
+    // -- Forte Table
 
     private static Block registerBlock(String name, Block block){
         registerBlockItem(name, block);

@@ -30,5 +30,8 @@ public class ModModelProvider extends FabricModelProvider {
         itemModelGenerator.register(ModItems.BLOOD_DIAMOND, Models.GENERATED);
         itemModelGenerator.register(ModItems.LIFE_INFUSER, Models.GENERATED);
 
+        itemModelGenerator.register(ModItems.LYCORITE_SWORD, Models.HANDHELD);
+        itemModelGenerator.register(ModItems.SANGUINE_SOLILOQUY, Models.HANDHELD);
+
     }
 }

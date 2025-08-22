@@ -1,6 +1,7 @@
 package com.lycoris.modid.datagen;
 
 import com.lycoris.modid.blocks.ModBlocks;
+import com.lycoris.modid.util.ModTags;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.registry.RegistryWrapper;
@@ -24,5 +25,11 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
 
         getOrCreateTagBuilder(BlockTags.NEEDS_DIAMOND_TOOL)
                 .add(ModBlocks.LYCORITE_ORE);
+
+        getOrCreateTagBuilder(ModTags.Blocks.NEEDS_LYCORITE_TOOL)
+                .addTag(BlockTags.NEEDS_DIAMOND_TOOL);
+
+        getOrCreateTagBuilder(ModTags.Blocks.INCORRECT_FOR_LYCORITE_TOOL)
+                ;
     }
 }

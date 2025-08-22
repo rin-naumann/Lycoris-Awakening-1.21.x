@@ -1,12 +1,14 @@
-// 1.21	2025-08-15T16:31:00.8769999	Lycoris Awakening/Model Definitions
+// 1.21	2025-08-21T17:39:29.2927366	Lycoris Awakening/Model Definitions
 dcbb81d64fa83e462f68afa0debabd5646c12674 assets\lycoris-awakening\models\item\arcanum_alloy_block.json
-b5a32246c976efc7bad4a1240a91370f5a136d9a assets\lycoris-awakening\models\item\life_infuser.json
 00b084e75a733b04773eee875f4d974806d7a6de assets\lycoris-awakening\models\item\arcanum_alloy.json
-7d9e0372212791c626d43de8610bbba2b98e2268 assets\lycoris-awakening\models\item\lycorite_ore.json
 74f0896e5b4a97614f91ac289593a79ae472ea8b assets\lycoris-awakening\models\item\lycorite_petal.json
-fede919cb42d62b2b613fdb69ae2a1b239646700 assets\lycoris-awakening\models\block\arcanum_alloy_block.json
 04a0c88b2d713963a2ba570a7434f995db3b66b3 assets\lycoris-awakening\models\block\lycorite_ore.json
 8a78ba5e8bfa8d201053079947909dc89cbc9dbf assets\lycoris-awakening\models\item\lycorite.json
+adc86b265b29528eaf7716ba10b175c7477bad77 assets\lycoris-awakening\blockstates\arcanum_alloy_block.json
+7b989564fe96e83997f40b8d1642dc2475b4212c assets\lycoris-awakening\models\item\lycorite_sword.json
+b5a32246c976efc7bad4a1240a91370f5a136d9a assets\lycoris-awakening\models\item\life_infuser.json
+2b1995aed759f41f39778cdc0502ca88188dd849 assets\lycoris-awakening\models\item\sanguine_soliloquy.json
+7d9e0372212791c626d43de8610bbba2b98e2268 assets\lycoris-awakening\models\item\lycorite_ore.json
+fede919cb42d62b2b613fdb69ae2a1b239646700 assets\lycoris-awakening\models\block\arcanum_alloy_block.json
 b6e85cc49b0a7d8dbff676b298b650319ea0ecec assets\lycoris-awakening\blockstates\lycorite_ore.json
 b48b67bb9265c431a243d5f4d37bfa3cecf9f11f assets\lycoris-awakening\models\item\blood_diamond.json
-adc86b265b29528eaf7716ba10b175c7477bad77 assets\lycoris-awakening\blockstates\arcanum_alloy_block.json
