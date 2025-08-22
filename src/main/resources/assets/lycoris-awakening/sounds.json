@@ -1,0 +1,14 @@
+{
+  "sanguine_dash": {
+    "subtitle": "sounds.lycoris-awakening.sanguine_dash",
+    "sounds": [
+      "lycoris-awakening:dash_sfx"
+    ]
+  },
+  "sanguine_explosion": {
+    "subtitle": "sounds.lycoris-awakening.sanguine_dash",
+    "sounds": [
+      "lycoris-awakening:sanguine_skill03_explosion"
+    ]
+  }
+}

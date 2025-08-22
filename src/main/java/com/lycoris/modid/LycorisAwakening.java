@@ -4,6 +4,7 @@ import com.lycoris.modid.blocks.ModBlocks;
 import com.lycoris.modid.component.ModDataComponentTypes;
 import com.lycoris.modid.item.ModItemGroups;
 import com.lycoris.modid.item.ModItems;
+import com.lycoris.modid.sound.ModSounds;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ public class LycorisAwakening implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		ModSounds.registerSounds();
 		ModItemGroups.registerItemGroups();
 		ModItems.registerModItems();
 		ModBlocks.registerModBlocks();
