@@ -2,6 +2,7 @@ package com.lycoris.modid;
 
 import com.lycoris.modid.blocks.ModBlocks;
 import com.lycoris.modid.component.ModDataComponentTypes;
+import com.lycoris.modid.effect.ModEffects;
 import com.lycoris.modid.item.ModItemGroups;
 import com.lycoris.modid.item.ModItems;
 import com.lycoris.modid.sound.ModSounds;
@@ -16,6 +17,7 @@ public class LycorisAwakening implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModSounds.registerSounds();
+		ModEffects.registerEffects();
 		ModItemGroups.registerItemGroups();
 		ModItems.registerModItems();
 		ModBlocks.registerModBlocks();

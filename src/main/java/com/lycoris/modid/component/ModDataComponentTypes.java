@@ -1,6 +1,7 @@
 package com.lycoris.modid.component;
 
 import com.lycoris.modid.LycorisAwakening;
+import com.mojang.serialization.Codec;
 import net.minecraft.component.Component;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
@@ -16,6 +17,10 @@ public class ModDataComponentTypes {
     public static final ComponentType<Integer> SANGUINE_CHARGES = register(
             "sainguine_charges",
             builder -> builder.codec(Codecs.NONNEGATIVE_INT)
+    );
+    public static final ComponentType<Boolean> REAPER_STATE = register(
+            "reaper_state",
+            builder -> builder.codec(Codec.BOOL)
     );
 
     private static <T>ComponentType<T> register(String name, UnaryOperator<ComponentType.Builder<T>> builderOperator) {

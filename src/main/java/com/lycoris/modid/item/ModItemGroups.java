@@ -26,6 +26,22 @@ public class ModItemGroups {
 
                     }).build());
 
+    public static final ItemGroup LYCORIS_AWAKENING_TOOLS_GROUP = Registry.register(Registries.ITEM_GROUP,
+            Identifier.of(LycorisAwakening.MOD_ID, "lycoris_awakening_blocks"),
+            FabricItemGroup.builder()
+                    .icon(() -> new ItemStack(ModItems.SANGUINE_SOLILOQUY))
+                    .displayName(Text.translatable("itemgroup.lycoris-awakening.lycoris_awakening_tools"))
+                    .entries((displayContext, entries) -> {
+                        entries.add(ModItems.LYCORITE_SWORD);
+                        entries.add(ModItems.SANGUINE_SOLILOQUY);
+                        entries.add(ModItems.LYCORITE_AXE);
+                        entries.add(ModItems.LYCORITE_PICKAXE);
+                        entries.add(ModItems.LYCORITE_SHOVEL);
+                        entries.add(ModItems.LYCORITE_HOE);
+                        entries.add(ModItems.MEMENTO_MORI);
+
+                    }).build());
+
     public static final ItemGroup LYCORIS_AWAKENING_BLOCKS_GROUP = Registry.register(Registries.ITEM_GROUP,
             Identifier.of(LycorisAwakening.MOD_ID, "lycoris_awakening_blocks"),
             FabricItemGroup.builder()
@@ -34,17 +50,6 @@ public class ModItemGroups {
                     .entries((displayContext, entries) -> {
                         entries.add(ModBlocks.ARCANUM_ALLOY_BLOCK);
                         entries.add(ModBlocks.LYCORITE_ORE);
-
-                    }).build());
-
-    public static final ItemGroup LYCORIS_AWAKENING_TOOLS_GROUP = Registry.register(Registries.ITEM_GROUP,
-            Identifier.of(LycorisAwakening.MOD_ID, "lycoris_awakening_blocks"),
-            FabricItemGroup.builder()
-                    .icon(() -> new ItemStack(ModItems.LYCORITE_SWORD))
-                    .displayName(Text.translatable("itemgroup.lycoris-awakening.lycoris_awakening_tools"))
-                    .entries((displayContext, entries) -> {
-                        entries.add(ModItems.LYCORITE_SWORD);
-                        entries.add(ModItems.SANGUINE_SOLILOQUY);
 
                     }).build());
 

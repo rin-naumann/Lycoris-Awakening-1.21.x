@@ -1,6 +1,626 @@
 {
-  "parent": "minecraft:item/handheld",
+  "format_version": "1.21.6",
+  "credit": "Made with Blockbench",
+  "texture_size": [32, 32],
   "textures": {
-    "layer0": "lycoris-awakening:item/sanguine_soliloquy"
-  }
+    "0": "lycoris-awakening:item/sanguine_soliloquy",
+    "particle": "lycoris-awakening:item/sanguine_soliloquy"
+  },
+  "elements": [
+    {
+      "name": "sanguine_soliloquy_0",
+      "from": [13, 14.5, 0],
+      "to": [14.5, 16, 0.5],
+      "faces": {
+        "north": {"uv": [14.5, 0, 13, 1.5], "texture": "#0"},
+        "east": {"uv": [14, 0, 14.5, 1.5], "texture": "#0"},
+        "south": {"uv": [13, 0, 14.5, 1.5], "texture": "#0"},
+        "west": {"uv": [13, 0, 13.5, 1.5], "texture": "#0"},
+        "up": {"uv": [13, 0, 14.5, 0.5], "texture": "#0"},
+        "down": {"uv": [13, 1, 14.5, 1.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_1",
+      "from": [14.5, 15, 0],
+      "to": [15.5, 16, 0.5],
+      "faces": {
+        "north": {"uv": [15.5, 0, 14.5, 1], "texture": "#0"},
+        "east": {"uv": [15, 0, 15.5, 1], "texture": "#0"},
+        "south": {"uv": [14.5, 0, 15.5, 1], "texture": "#0"},
+        "west": {"uv": [14.5, 0, 15, 1], "texture": "#0"},
+        "up": {"uv": [14.5, 0, 15.5, 0.5], "texture": "#0"},
+        "down": {"uv": [14.5, 0.5, 15.5, 1], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_2",
+      "from": [15.5, 15.5, 0],
+      "to": [16, 16, 0.5],
+      "faces": {
+        "north": {"uv": [16, 0, 15.5, 0.5], "texture": "#0"},
+        "east": {"uv": [15.5, 0, 16, 0.5], "texture": "#0"},
+        "south": {"uv": [15.5, 0, 16, 0.5], "texture": "#0"},
+        "west": {"uv": [15.5, 0, 16, 0.5], "texture": "#0"},
+        "up": {"uv": [15.5, 0, 16, 0.5], "texture": "#0"},
+        "down": {"uv": [15.5, 0, 16, 0.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_3",
+      "from": [12.5, 13.5, 0],
+      "to": [13, 15.5, 0.5],
+      "faces": {
+        "north": {"uv": [13, 0.5, 12.5, 2.5], "texture": "#0"},
+        "east": {"uv": [12.5, 0.5, 13, 2.5], "texture": "#0"},
+        "south": {"uv": [12.5, 0.5, 13, 2.5], "texture": "#0"},
+        "west": {"uv": [12.5, 0.5, 13, 2.5], "texture": "#0"},
+        "up": {"uv": [12.5, 0.5, 13, 1], "texture": "#0"},
+        "down": {"uv": [12.5, 2, 13, 2.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_4",
+      "from": [12, 13, 0],
+      "to": [12.5, 15, 0.5],
+      "faces": {
+        "north": {"uv": [12.5, 1, 12, 3], "texture": "#0"},
+        "east": {"uv": [12, 1, 12.5, 3], "texture": "#0"},
+        "south": {"uv": [12, 1, 12.5, 3], "texture": "#0"},
+        "west": {"uv": [12, 1, 12.5, 3], "texture": "#0"},
+        "up": {"uv": [12, 1, 12.5, 1.5], "texture": "#0"},
+        "down": {"uv": [12, 2.5, 12.5, 3], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_5",
+      "from": [11.5, 12.5, 0],
+      "to": [12, 14.5, 0.5],
+      "faces": {
+        "north": {"uv": [12, 1.5, 11.5, 3.5], "texture": "#0"},
+        "east": {"uv": [11.5, 1.5, 12, 3.5], "texture": "#0"},
+        "south": {"uv": [11.5, 1.5, 12, 3.5], "texture": "#0"},
+        "west": {"uv": [11.5, 1.5, 12, 3.5], "texture": "#0"},
+        "up": {"uv": [11.5, 1.5, 12, 2], "texture": "#0"},
+        "down": {"uv": [11.5, 3, 12, 3.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_6",
+      "from": [13, 14, 0],
+      "to": [13.5, 14.5, 0.5],
+      "faces": {
+        "north": {"uv": [13.5, 1.5, 13, 2], "texture": "#0"},
+        "east": {"uv": [13, 1.5, 13.5, 2], "texture": "#0"},
+        "south": {"uv": [13, 1.5, 13.5, 2], "texture": "#0"},
+        "west": {"uv": [13, 1.5, 13.5, 2], "texture": "#0"},
+        "up": {"uv": [13, 1.5, 13.5, 2], "texture": "#0"},
+        "down": {"uv": [13, 1.5, 13.5, 2], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_7",
+      "from": [11, 12, 0],
+      "to": [11.5, 14, 0.5],
+      "faces": {
+        "north": {"uv": [11.5, 2, 11, 4], "texture": "#0"},
+        "east": {"uv": [11, 2, 11.5, 4], "texture": "#0"},
+        "south": {"uv": [11, 2, 11.5, 4], "texture": "#0"},
+        "west": {"uv": [11, 2, 11.5, 4], "texture": "#0"},
+        "up": {"uv": [11, 2, 11.5, 2.5], "texture": "#0"},
+        "down": {"uv": [11, 3.5, 11.5, 4], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_8",
+      "from": [10.5, 11.5, 0],
+      "to": [11, 13.5, 0.5],
+      "faces": {
+        "north": {"uv": [11, 2.5, 10.5, 4.5], "texture": "#0"},
+        "east": {"uv": [10.5, 2.5, 11, 4.5], "texture": "#0"},
+        "south": {"uv": [10.5, 2.5, 11, 4.5], "texture": "#0"},
+        "west": {"uv": [10.5, 2.5, 11, 4.5], "texture": "#0"},
+        "up": {"uv": [10.5, 2.5, 11, 3], "texture": "#0"},
+        "down": {"uv": [10.5, 4, 11, 4.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_9",
+      "from": [10, 11, 0],
+      "to": [10.5, 13, 0.5],
+      "faces": {
+        "north": {"uv": [10.5, 3, 10, 5], "texture": "#0"},
+        "east": {"uv": [10, 3, 10.5, 5], "texture": "#0"},
+        "south": {"uv": [10, 3, 10.5, 5], "texture": "#0"},
+        "west": {"uv": [10, 3, 10.5, 5], "texture": "#0"},
+        "up": {"uv": [10, 3, 10.5, 3.5], "texture": "#0"},
+        "down": {"uv": [10, 4.5, 10.5, 5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_10",
+      "from": [9.5, 10.5, 0],
+      "to": [10, 12.5, 0.5],
+      "faces": {
+        "north": {"uv": [10, 3.5, 9.5, 5.5], "texture": "#0"},
+        "east": {"uv": [9.5, 3.5, 10, 5.5], "texture": "#0"},
+        "south": {"uv": [9.5, 3.5, 10, 5.5], "texture": "#0"},
+        "west": {"uv": [9.5, 3.5, 10, 5.5], "texture": "#0"},
+        "up": {"uv": [9.5, 3.5, 10, 4], "texture": "#0"},
+        "down": {"uv": [9.5, 5, 10, 5.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_11",
+      "from": [9, 10, 0],
+      "to": [9.5, 12, 0.5],
+      "faces": {
+        "north": {"uv": [9.5, 4, 9, 6], "texture": "#0"},
+        "east": {"uv": [9, 4, 9.5, 6], "texture": "#0"},
+        "south": {"uv": [9, 4, 9.5, 6], "texture": "#0"},
+        "west": {"uv": [9, 4, 9.5, 6], "texture": "#0"},
+        "up": {"uv": [9, 4, 9.5, 4.5], "texture": "#0"},
+        "down": {"uv": [9, 5.5, 9.5, 6], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_12",
+      "from": [8.5, 9.5, 0],
+      "to": [9, 11.5, 0.5],
+      "faces": {
+        "north": {"uv": [9, 4.5, 8.5, 6.5], "texture": "#0"},
+        "east": {"uv": [8.5, 4.5, 9, 6.5], "texture": "#0"},
+        "south": {"uv": [8.5, 4.5, 9, 6.5], "texture": "#0"},
+        "west": {"uv": [8.5, 4.5, 9, 6.5], "texture": "#0"},
+        "up": {"uv": [8.5, 4.5, 9, 5], "texture": "#0"},
+        "down": {"uv": [8.5, 6, 9, 6.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_13",
+      "from": [8, 9, 0],
+      "to": [8.5, 11, 0.5],
+      "faces": {
+        "north": {"uv": [8.5, 5, 8, 7], "texture": "#0"},
+        "east": {"uv": [8, 5, 8.5, 7], "texture": "#0"},
+        "south": {"uv": [8, 5, 8.5, 7], "texture": "#0"},
+        "west": {"uv": [8, 5, 8.5, 7], "texture": "#0"},
+        "up": {"uv": [8, 5, 8.5, 5.5], "texture": "#0"},
+        "down": {"uv": [8, 6.5, 8.5, 7], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_14",
+      "from": [7.5, 8.5, 0],
+      "to": [8, 10.5, 0.5],
+      "faces": {
+        "north": {"uv": [8, 5.5, 7.5, 7.5], "texture": "#0"},
+        "east": {"uv": [7.5, 5.5, 8, 7.5], "texture": "#0"},
+        "south": {"uv": [7.5, 5.5, 8, 7.5], "texture": "#0"},
+        "west": {"uv": [7.5, 5.5, 8, 7.5], "texture": "#0"},
+        "up": {"uv": [7.5, 5.5, 8, 6], "texture": "#0"},
+        "down": {"uv": [7.5, 7, 8, 7.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_15",
+      "from": [10.5, 9, 0],
+      "to": [11, 10.5, 0.5],
+      "faces": {
+        "north": {"uv": [11, 5.5, 10.5, 7], "texture": "#0"},
+        "east": {"uv": [10.5, 5.5, 11, 7], "texture": "#0"},
+        "south": {"uv": [10.5, 5.5, 11, 7], "texture": "#0"},
+        "west": {"uv": [10.5, 5.5, 11, 7], "texture": "#0"},
+        "up": {"uv": [10.5, 5.5, 11, 6], "texture": "#0"},
+        "down": {"uv": [10.5, 6.5, 11, 7], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_16",
+      "from": [7, 8, 0],
+      "to": [7.5, 10, 0.5],
+      "faces": {
+        "north": {"uv": [7.5, 6, 7, 8], "texture": "#0"},
+        "east": {"uv": [7, 6, 7.5, 8], "texture": "#0"},
+        "south": {"uv": [7, 6, 7.5, 8], "texture": "#0"},
+        "west": {"uv": [7, 6, 7.5, 8], "texture": "#0"},
+        "up": {"uv": [7, 6, 7.5, 6.5], "texture": "#0"},
+        "down": {"uv": [7, 7.5, 7.5, 8], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_17",
+      "from": [10, 8.5, 0],
+      "to": [10.5, 10, 0.5],
+      "faces": {
+        "north": {"uv": [10.5, 6, 10, 7.5], "texture": "#0"},
+        "east": {"uv": [10, 6, 10.5, 7.5], "texture": "#0"},
+        "south": {"uv": [10, 6, 10.5, 7.5], "texture": "#0"},
+        "west": {"uv": [10, 6, 10.5, 7.5], "texture": "#0"},
+        "up": {"uv": [10, 6, 10.5, 6.5], "texture": "#0"},
+        "down": {"uv": [10, 7, 10.5, 7.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_18",
+      "from": [6.5, 7.5, 0],
+      "to": [7, 9.5, 0.5],
+      "faces": {
+        "north": {"uv": [7, 6.5, 6.5, 8.5], "texture": "#0"},
+        "east": {"uv": [6.5, 6.5, 7, 8.5], "texture": "#0"},
+        "south": {"uv": [6.5, 6.5, 7, 8.5], "texture": "#0"},
+        "west": {"uv": [6.5, 6.5, 7, 8.5], "texture": "#0"},
+        "up": {"uv": [6.5, 6.5, 7, 7], "texture": "#0"},
+        "down": {"uv": [6.5, 8, 7, 8.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_19",
+      "from": [9.5, 8, 0],
+      "to": [10, 9.5, 0.5],
+      "faces": {
+        "north": {"uv": [10, 6.5, 9.5, 8], "texture": "#0"},
+        "east": {"uv": [9.5, 6.5, 10, 8], "texture": "#0"},
+        "south": {"uv": [9.5, 6.5, 10, 8], "texture": "#0"},
+        "west": {"uv": [9.5, 6.5, 10, 8], "texture": "#0"},
+        "up": {"uv": [9.5, 6.5, 10, 7], "texture": "#0"},
+        "down": {"uv": [9.5, 7.5, 10, 8], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_20",
+      "from": [6, 4.5, 0],
+      "to": [6.5, 9, 0.5],
+      "faces": {
+        "north": {"uv": [6.5, 7, 6, 11.5], "texture": "#0"},
+        "east": {"uv": [6, 7, 6.5, 11.5], "texture": "#0"},
+        "south": {"uv": [6, 7, 6.5, 11.5], "texture": "#0"},
+        "west": {"uv": [6, 7, 6.5, 11.5], "texture": "#0"},
+        "up": {"uv": [6, 7, 6.5, 7.5], "texture": "#0"},
+        "down": {"uv": [6, 11, 6.5, 11.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_21",
+      "from": [9, 7.5, 0],
+      "to": [9.5, 9, 0.5],
+      "faces": {
+        "north": {"uv": [9.5, 7, 9, 8.5], "texture": "#0"},
+        "east": {"uv": [9, 7, 9.5, 8.5], "texture": "#0"},
+        "south": {"uv": [9, 7, 9.5, 8.5], "texture": "#0"},
+        "west": {"uv": [9, 7, 9.5, 8.5], "texture": "#0"},
+        "up": {"uv": [9, 7, 9.5, 7.5], "texture": "#0"},
+        "down": {"uv": [9, 8, 9.5, 8.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_22",
+      "from": [5.5, 3, 0],
+      "to": [6, 8.5, 0.5],
+      "faces": {
+        "north": {"uv": [6, 7.5, 5.5, 13], "texture": "#0"},
+        "east": {"uv": [5.5, 7.5, 6, 13], "texture": "#0"},
+        "south": {"uv": [5.5, 7.5, 6, 13], "texture": "#0"},
+        "west": {"uv": [5.5, 7.5, 6, 13], "texture": "#0"},
+        "up": {"uv": [5.5, 7.5, 6, 8], "texture": "#0"},
+        "down": {"uv": [5.5, 12.5, 6, 13], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_23",
+      "from": [8.5, 7, 0],
+      "to": [9, 8.5, 0.5],
+      "faces": {
+        "north": {"uv": [9, 7.5, 8.5, 9], "texture": "#0"},
+        "east": {"uv": [8.5, 7.5, 9, 9], "texture": "#0"},
+        "south": {"uv": [8.5, 7.5, 9, 9], "texture": "#0"},
+        "west": {"uv": [8.5, 7.5, 9, 9], "texture": "#0"},
+        "up": {"uv": [8.5, 7.5, 9, 8], "texture": "#0"},
+        "down": {"uv": [8.5, 8.5, 9, 9], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_24",
+      "from": [5, 3.5, 0],
+      "to": [5.5, 8, 0.5],
+      "faces": {
+        "north": {"uv": [5.5, 8, 5, 12.5], "texture": "#0"},
+        "east": {"uv": [5, 8, 5.5, 12.5], "texture": "#0"},
+        "south": {"uv": [5, 8, 5.5, 12.5], "texture": "#0"},
+        "west": {"uv": [5, 8, 5.5, 12.5], "texture": "#0"},
+        "up": {"uv": [5, 8, 5.5, 8.5], "texture": "#0"},
+        "down": {"uv": [5, 12, 5.5, 12.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_25",
+      "from": [8, 6.5, 0],
+      "to": [8.5, 8, 0.5],
+      "faces": {
+        "north": {"uv": [8.5, 8, 8, 9.5], "texture": "#0"},
+        "east": {"uv": [8, 8, 8.5, 9.5], "texture": "#0"},
+        "south": {"uv": [8, 8, 8.5, 9.5], "texture": "#0"},
+        "west": {"uv": [8, 8, 8.5, 9.5], "texture": "#0"},
+        "up": {"uv": [8, 8, 8.5, 8.5], "texture": "#0"},
+        "down": {"uv": [8, 9, 8.5, 9.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_26",
+      "from": [3.5, 5, 0],
+      "to": [5, 7.5, 0.5],
+      "faces": {
+        "north": {"uv": [5, 8.5, 3.5, 11], "texture": "#0"},
+        "east": {"uv": [4.5, 8.5, 5, 11], "texture": "#0"},
+        "south": {"uv": [3.5, 8.5, 5, 11], "texture": "#0"},
+        "west": {"uv": [3.5, 8.5, 4, 11], "texture": "#0"},
+        "up": {"uv": [3.5, 8.5, 5, 9], "texture": "#0"},
+        "down": {"uv": [3.5, 10.5, 5, 11], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_27",
+      "from": [7.5, 6, 0],
+      "to": [8, 7.5, 0.5],
+      "faces": {
+        "north": {"uv": [8, 8.5, 7.5, 10], "texture": "#0"},
+        "east": {"uv": [7.5, 8.5, 8, 10], "texture": "#0"},
+        "south": {"uv": [7.5, 8.5, 8, 10], "texture": "#0"},
+        "west": {"uv": [7.5, 8.5, 8, 10], "texture": "#0"},
+        "up": {"uv": [7.5, 8.5, 8, 9], "texture": "#0"},
+        "down": {"uv": [7.5, 9.5, 8, 10], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_28",
+      "from": [3, 5.5, 0],
+      "to": [3.5, 7, 0.5],
+      "faces": {
+        "north": {"uv": [3.5, 9, 3, 10.5], "texture": "#0"},
+        "east": {"uv": [3, 9, 3.5, 10.5], "texture": "#0"},
+        "south": {"uv": [3, 9, 3.5, 10.5], "texture": "#0"},
+        "west": {"uv": [3, 9, 3.5, 10.5], "texture": "#0"},
+        "up": {"uv": [3, 9, 3.5, 9.5], "texture": "#0"},
+        "down": {"uv": [3, 10, 3.5, 10.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_29",
+      "from": [7, 5.5, 0],
+      "to": [7.5, 7, 0.5],
+      "faces": {
+        "north": {"uv": [7.5, 9, 7, 10.5], "texture": "#0"},
+        "east": {"uv": [7, 9, 7.5, 10.5], "texture": "#0"},
+        "south": {"uv": [7, 9, 7.5, 10.5], "texture": "#0"},
+        "west": {"uv": [7, 9, 7.5, 10.5], "texture": "#0"},
+        "up": {"uv": [7, 9, 7.5, 9.5], "texture": "#0"},
+        "down": {"uv": [7, 10, 7.5, 10.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_30",
+      "from": [2.5, 5, 0],
+      "to": [3, 6.5, 0.5],
+      "faces": {
+        "north": {"uv": [3, 9.5, 2.5, 11], "texture": "#0"},
+        "east": {"uv": [2.5, 9.5, 3, 11], "texture": "#0"},
+        "south": {"uv": [2.5, 9.5, 3, 11], "texture": "#0"},
+        "west": {"uv": [2.5, 9.5, 3, 11], "texture": "#0"},
+        "up": {"uv": [2.5, 9.5, 3, 10], "texture": "#0"},
+        "down": {"uv": [2.5, 10.5, 3, 11], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_31",
+      "from": [6.5, 5, 0],
+      "to": [7, 6.5, 0.5],
+      "faces": {
+        "north": {"uv": [7, 9.5, 6.5, 11], "texture": "#0"},
+        "east": {"uv": [6.5, 9.5, 7, 11], "texture": "#0"},
+        "south": {"uv": [6.5, 9.5, 7, 11], "texture": "#0"},
+        "west": {"uv": [6.5, 9.5, 7, 11], "texture": "#0"},
+        "up": {"uv": [6.5, 9.5, 7, 10], "texture": "#0"},
+        "down": {"uv": [6.5, 10.5, 7, 11], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_32",
+      "from": [2, 4.5, 0],
+      "to": [2.5, 6, 0.5],
+      "faces": {
+        "north": {"uv": [2.5, 10, 2, 11.5], "texture": "#0"},
+        "east": {"uv": [2, 10, 2.5, 11.5], "texture": "#0"},
+        "south": {"uv": [2, 10, 2.5, 11.5], "texture": "#0"},
+        "west": {"uv": [2, 10, 2.5, 11.5], "texture": "#0"},
+        "up": {"uv": [2, 10, 2.5, 10.5], "texture": "#0"},
+        "down": {"uv": [2, 11, 2.5, 11.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_33",
+      "from": [4, 4, 0],
+      "to": [5, 5, 0.5],
+      "faces": {
+        "north": {"uv": [5, 11, 4, 12], "texture": "#0"},
+        "east": {"uv": [4.5, 11, 5, 12], "texture": "#0"},
+        "south": {"uv": [4, 11, 5, 12], "texture": "#0"},
+        "west": {"uv": [4, 11, 4.5, 12], "texture": "#0"},
+        "up": {"uv": [4, 11, 5, 11.5], "texture": "#0"},
+        "down": {"uv": [4, 11.5, 5, 12], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_34",
+      "from": [3.5, 3, 0],
+      "to": [4, 4.5, 0.5],
+      "faces": {
+        "north": {"uv": [4, 11.5, 3.5, 13], "texture": "#0"},
+        "east": {"uv": [3.5, 11.5, 4, 13], "texture": "#0"},
+        "south": {"uv": [3.5, 11.5, 4, 13], "texture": "#0"},
+        "west": {"uv": [3.5, 11.5, 4, 13], "texture": "#0"},
+        "up": {"uv": [3.5, 11.5, 4, 12], "texture": "#0"},
+        "down": {"uv": [3.5, 12.5, 4, 13], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_35",
+      "from": [3, 2.5, 0],
+      "to": [3.5, 4, 0.5],
+      "faces": {
+        "north": {"uv": [3.5, 12, 3, 13.5], "texture": "#0"},
+        "east": {"uv": [3, 12, 3.5, 13.5], "texture": "#0"},
+        "south": {"uv": [3, 12, 3.5, 13.5], "texture": "#0"},
+        "west": {"uv": [3, 12, 3.5, 13.5], "texture": "#0"},
+        "up": {"uv": [3, 12, 3.5, 12.5], "texture": "#0"},
+        "down": {"uv": [3, 13, 3.5, 13.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_36",
+      "from": [4, 3.5, 0],
+      "to": [4.5, 4, 0.5],
+      "faces": {
+        "north": {"uv": [4.5, 12, 4, 12.5], "texture": "#0"},
+        "east": {"uv": [4, 12, 4.5, 12.5], "texture": "#0"},
+        "south": {"uv": [4, 12, 4.5, 12.5], "texture": "#0"},
+        "west": {"uv": [4, 12, 4.5, 12.5], "texture": "#0"},
+        "up": {"uv": [4, 12, 4.5, 12.5], "texture": "#0"},
+        "down": {"uv": [4, 12, 4.5, 12.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_37",
+      "from": [6, 3, 0],
+      "to": [6.5, 4, 0.5],
+      "faces": {
+        "north": {"uv": [6.5, 12, 6, 13], "texture": "#0"},
+        "east": {"uv": [6, 12, 6.5, 13], "texture": "#0"},
+        "south": {"uv": [6, 12, 6.5, 13], "texture": "#0"},
+        "west": {"uv": [6, 12, 6.5, 13], "texture": "#0"},
+        "up": {"uv": [6, 12, 6.5, 12.5], "texture": "#0"},
+        "down": {"uv": [6, 12.5, 6.5, 13], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_38",
+      "from": [2.5, 2, 0],
+      "to": [3, 3.5, 0.5],
+      "faces": {
+        "north": {"uv": [3, 12.5, 2.5, 14], "texture": "#0"},
+        "east": {"uv": [2.5, 12.5, 3, 14], "texture": "#0"},
+        "south": {"uv": [2.5, 12.5, 3, 14], "texture": "#0"},
+        "west": {"uv": [2.5, 12.5, 3, 14], "texture": "#0"},
+        "up": {"uv": [2.5, 12.5, 3, 13], "texture": "#0"},
+        "down": {"uv": [2.5, 13.5, 3, 14], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_39",
+      "from": [2, 1.5, 0],
+      "to": [2.5, 3, 0.5],
+      "faces": {
+        "north": {"uv": [2.5, 13, 2, 14.5], "texture": "#0"},
+        "east": {"uv": [2, 13, 2.5, 14.5], "texture": "#0"},
+        "south": {"uv": [2, 13, 2.5, 14.5], "texture": "#0"},
+        "west": {"uv": [2, 13, 2.5, 14.5], "texture": "#0"},
+        "up": {"uv": [2, 13, 2.5, 13.5], "texture": "#0"},
+        "down": {"uv": [2, 14, 2.5, 14.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_40",
+      "from": [1.5, 1, 0],
+      "to": [2, 2.5, 0.5],
+      "faces": {
+        "north": {"uv": [2, 13.5, 1.5, 15], "texture": "#0"},
+        "east": {"uv": [1.5, 13.5, 2, 15], "texture": "#0"},
+        "south": {"uv": [1.5, 13.5, 2, 15], "texture": "#0"},
+        "west": {"uv": [1.5, 13.5, 2, 15], "texture": "#0"},
+        "up": {"uv": [1.5, 13.5, 2, 14], "texture": "#0"},
+        "down": {"uv": [1.5, 14.5, 2, 15], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_41",
+      "from": [1, 0.5, 0],
+      "to": [1.5, 2, 0.5],
+      "faces": {
+        "north": {"uv": [1.5, 14, 1, 15.5], "texture": "#0"},
+        "east": {"uv": [1, 14, 1.5, 15.5], "texture": "#0"},
+        "south": {"uv": [1, 14, 1.5, 15.5], "texture": "#0"},
+        "west": {"uv": [1, 14, 1.5, 15.5], "texture": "#0"},
+        "up": {"uv": [1, 14, 1.5, 14.5], "texture": "#0"},
+        "down": {"uv": [1, 15, 1.5, 15.5], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_42",
+      "from": [0.5, 0, 0],
+      "to": [1, 1.5, 0.5],
+      "faces": {
+        "north": {"uv": [1, 14.5, 0.5, 16], "texture": "#0"},
+        "east": {"uv": [0.5, 14.5, 1, 16], "texture": "#0"},
+        "south": {"uv": [0.5, 14.5, 1, 16], "texture": "#0"},
+        "west": {"uv": [0.5, 14.5, 1, 16], "texture": "#0"},
+        "up": {"uv": [0.5, 14.5, 1, 15], "texture": "#0"},
+        "down": {"uv": [0.5, 15.5, 1, 16], "texture": "#0"}
+      }
+    },
+    {
+      "name": "sanguine_soliloquy_43",
+      "from": [0, 0, 0],
+      "to": [0.5, 1, 0.5],
+      "faces": {
+        "north": {"uv": [0.5, 15, 0, 16], "texture": "#0"},
+        "east": {"uv": [0, 15, 0.5, 16], "texture": "#0"},
+        "south": {"uv": [0, 15, 0.5, 16], "texture": "#0"},
+        "west": {"uv": [0, 15, 0.5, 16], "texture": "#0"},
+        "up": {"uv": [0, 15, 0.5, 15.5], "texture": "#0"},
+        "down": {"uv": [0, 15.5, 0.5, 16], "texture": "#0"}
+      }
+    }
+  ],
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [75, -90, 120],
+      "translation": [-7.75, 8.25, 1.75],
+      "scale": [1.5, 1.5, 1]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [-70, 90, 30],
+      "translation": [7.75, 8.25, 2.25],
+      "scale": [1.5, 1.5, 1]
+    },
+    "firstperson_righthand": {
+      "rotation": [15, -100, 70],
+      "translation": [-6.5, 8.5, 0.75],
+      "scale": [1.5, 1.5, 1]
+    },
+    "firstperson_lefthand": {
+      "rotation": [0, 90, -50],
+      "translation": [10, 7, 0.75],
+      "scale": [1.5, 1.5, 1]
+    },
+    "ground": {
+      "rotation": [0, 0, -180],
+      "translation": [0.75, -2, 7.5],
+      "scale": [1.5, 1.5, 1]
+    },
+    "gui": {
+      "scale": [0.9, 0.9, 1]
+    },
+    "fixed": {
+      "rotation": [180, 0, -180],
+      "translation": [0, 0, -7],
+      "scale": [1.1, 1.1, 1]
+    }
+  },
+  "groups": [
+    {
+      "name": "sanguine_soliloquy",
+      "origin": [8, 8, 8],
+      "color": 0,
+      "children": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]
+    }
+  ]
 }
