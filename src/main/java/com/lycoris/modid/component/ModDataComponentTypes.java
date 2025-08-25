@@ -14,8 +14,19 @@ import java.util.function.UnaryOperator;
 
 public class ModDataComponentTypes {
 
+    //COOLDOWN COMPONENTS
+    public static final ComponentType<Integer> SKILL_COOLDOWN = register(
+            "skill_cooldown",
+            builder -> builder.codec(Codecs.NONNEGATIVE_INT)
+    );
+    public static final ComponentType<Integer> ULTIMATE_COOLDOWN = register(
+            "ultimate_cooldown",
+            builder -> builder.codec(Codecs.NONNEGATIVE_INT)
+    );
+
+    //SPECIAL WEAPON COMPONENTS
     public static final ComponentType<Integer> SANGUINE_CHARGES = register(
-            "sainguine_charges",
+            "sanguine_charges",
             builder -> builder.codec(Codecs.NONNEGATIVE_INT)
     );
     public static final ComponentType<Boolean> REAPER_STATE = register(

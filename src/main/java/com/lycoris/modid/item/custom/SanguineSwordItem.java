@@ -2,6 +2,7 @@ package com.lycoris.modid.item.custom;
 
 import com.lycoris.modid.component.ModDataComponentTypes;
 import com.lycoris.modid.sound.ModSounds;
+import com.lycoris.modid.util.CooldownBarManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
@@ -35,6 +36,7 @@ import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public class SanguineSwordItem extends SwordItem {
 
@@ -46,6 +48,26 @@ public class SanguineSwordItem extends SwordItem {
     // === Ticking System ===
     static {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+            // --- Handle cooldown system ---
+            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                ItemStack held = player.getMainHandStack();
+                if (held.getItem() instanceof SanguineSwordItem) {
+                    int skillCd = held.getOrDefault(ModDataComponentTypes.SKILL_COOLDOWN, 0);
+                    if (skillCd > 0) {
+                        held.set(ModDataComponentTypes.SKILL_COOLDOWN, skillCd - 1);
+                    }
+                    int ultCd = held.getOrDefault(ModDataComponentTypes.ULTIMATE_COOLDOWN, 0);
+                    if (ultCd > 0) {
+                        held.set(ModDataComponentTypes.ULTIMATE_COOLDOWN, ultCd - 1);
+                    }
+
+                    CooldownBarManager.updateSkillBar(player, held.getOrDefault(ModDataComponentTypes.SKILL_COOLDOWN, 0), 200);
+                    CooldownBarManager.updateUltimateBar(player, held.getOrDefault(ModDataComponentTypes.ULTIMATE_COOLDOWN, 0), 600);
+                } else {
+                    CooldownBarManager.clearAll(player);
+                }
+            }
+
             // --- Handle dash movement + trail ---
             for (Iterator<Map.Entry<UUID, DashData>> it = PLAYER_DASH.entrySet().iterator(); it.hasNext();) {
                 Map.Entry<UUID, DashData> entry = it.next();
@@ -54,9 +76,10 @@ public class SanguineSwordItem extends SwordItem {
 
                 if (player != null) {
                     Vec3d velocity = player.getVelocity();
-                    boolean stillMovingFast = velocity.horizontalLength() > 0.13; // sprinting cutoff
+                    boolean stillMovingFast = velocity.horizontalLength() > 0.13; // sprint cutoff
 
                     if (dash.ticksLeft > 0 || stillMovingFast) {
+                        // Apply dash push only if timer still running
                         if (dash.ticksLeft > 0) {
                             Vec3d step = dash.direction.multiply(dash.speed);
                             player.addVelocity(step.x, step.y * 0.1, step.z);
@@ -64,23 +87,29 @@ public class SanguineSwordItem extends SwordItem {
                             dash.ticksLeft--;
                         }
 
-                        // Particle streak matching player's body
+                        // Particle trail while timer running OR player still fast
                         ServerWorld sw = player.getServerWorld();
-                        Box box = player.getBoundingBox().expand(0.1);
+                        Box box = player.getBoundingBox().expand(0.2);
                         spawnBoxParticles(
                                 sw,
-                                new DustParticleEffect(new Vector3f(0.9F, 0.0F, 0.0F), 2.2F),
+                                new DustParticleEffect(new Vector3f(0.9F, 0.0F, 0.0F), 1.8F),
                                 box,
-                                25, // density
+                                15, // fewer particles than before
                                 0.05
                         );
+
                     } else {
+                        // Dash is fully done → trigger callback once
+                        if (dash.onComplete != null) {
+                            dash.onComplete.accept(player);
+                        }
                         it.remove();
                     }
                 } else {
-                    it.remove();
+                    it.remove(); // remove if player not found
                 }
             }
+
 
             // --- Handle delayed explosion from skill three ---
             for (Iterator<Map.Entry<UUID, DelayedExplosion>> it = SKILL_THREE_DELAYED_ATTACK.entrySet().iterator(); it.hasNext();) {
@@ -113,7 +142,7 @@ public class SanguineSwordItem extends SwordItem {
                         for (LivingEntity target : aoeTargets) {
                             exp.sword.attackWithMultiplier(sp, target, 3.0f);
                             exp.sword.freezeEntity(target, 60);
-                            exp.sword.spawnSweepParticle(sw, target);
+                            exp.sword.spawnParticles(sw, target);
                         }
                     }
                     it.remove();
@@ -162,114 +191,177 @@ public class SanguineSwordItem extends SwordItem {
         if (!world.isClient) {
             int charges = getCharges(stack);
 
-            if (!user.isSneaking()) {
-                // Normal right click → add charge
+            if (!user.isSneaking()) { // Normal right click to add charge
                 if (charges < 3) {
-                    user.damage(world.getDamageSources().outOfWorld(), 4.0F);
-                    addCharge(stack);
-                    if (user instanceof ServerPlayerEntity sp) {
-                        sp.sendMessage(Text.literal("Sanguine Soliloquy charged: " + getCharges(stack)).formatted(Formatting.RED), true);
+                    if (!(user.getHealth() <= 4)){ // Checks if you have enough health.
+                        int ultCld = stack.getOrDefault(ModDataComponentTypes.ULTIMATE_COOLDOWN, 0);
+                        if (!(ultCld > 0 && charges == 2)){
+                            user.damage(world.getDamageSources().outOfWorld(), 4.0F);
+                            addCharge(stack);
+                            if (user instanceof ServerPlayerEntity sp) sp.sendMessage(Text.literal("Sanguine Soliloquy charged: " + getCharges(stack)).formatted(Formatting.RED), true);
+                        } else {
+                            if (user instanceof ServerPlayerEntity sp) sp.sendMessage(Text.literal("Ult is on Cooldown. Charges are limited." + getCharges(stack)).formatted(Formatting.RED), true);
+                        }
+                    } else {
+                        if (user instanceof ServerPlayerEntity sp) sp.sendMessage(Text.literal("Not enough Health to Sacrifice").formatted(Formatting.RED), true);
                     }
                 }
-            } else {
-                // Shift right click → unleash skill
+            } else { // Shift right click → unleash skill
+
+                int skillCld = stack.getOrDefault(ModDataComponentTypes.SKILL_COOLDOWN, 0);
+                int ultCld = stack.getOrDefault(ModDataComponentTypes.ULTIMATE_COOLDOWN, 0);
+                boolean skillCasted = false;
+
                 if (charges == 1) {
-                    skillOne_BleedingDash(world, user);
-                    user.getItemCooldownManager().set(this, 100);
+                    if (!(skillCld > 0)){
+                        skillOne_BleedingDash(world, user);
+                        stack.set(ModDataComponentTypes.SKILL_COOLDOWN, 20 * 5); // 5s
+                        skillCasted = true;
+                    } else {
+                        if (user instanceof ServerPlayerEntity sp) sp.sendMessage(Text.literal("Skill on Cooldown").formatted(Formatting.GRAY), true);
+                    }
                 } else if (charges == 2) {
-                    skillTwo_BleedingDash(world, user);
-                    user.getItemCooldownManager().set(this, 200);
+                    if (!(skillCld > 0)){
+                        skillTwo_BleedingDash(world, user);
+                        stack.set(ModDataComponentTypes.SKILL_COOLDOWN, 20 * 10); // 10s
+                        skillCasted = true;
+                    } else {
+                        if (user instanceof ServerPlayerEntity sp) sp.sendMessage(Text.literal("Skill on Cooldown").formatted(Formatting.GRAY), true);
+                    }
                 } else if (charges == 3) {
-                    skillThree_BleedingDash(world, user);
-                    user.getItemCooldownManager().set(this, 600);
+                    if (!(ultCld > 0)){
+                        skillThree_BleedingDash(world, user);
+                        stack.set(ModDataComponentTypes.ULTIMATE_COOLDOWN, 20 * 30); // 30s
+                        skillCasted = true;
+                    } else {
+                        if (user instanceof ServerPlayerEntity sp) sp.sendMessage(Text.literal("Ultimate on Cooldown").formatted(Formatting.GRAY), true);
+                    }
                 }
-                if (charges > 0) resetCharges(stack);
+                if (charges > 0 && skillCasted) resetCharges(stack);
             }
         }
         return TypedActionResult.success(stack, world.isClient);
     }
 
-    // === Skills ===
+    // === Skill One: Hemorrhage ===
     private void skillOne_BleedingDash(World world, PlayerEntity user) {
-        if (user instanceof ServerPlayerEntity sp)
+        if (user instanceof ServerPlayerEntity sp) {
             sp.sendMessage(Text.literal("Blood Arts: Hemorrhage").formatted(Formatting.RED), true);
+        }
 
-        Vec3d look = user.getRotationVec(1.0F).normalize();
-        PLAYER_DASH.put(user.getUuid(), new DashData(look, user.getPos(), 4, 1.5));
+        Vec3d direction = user.getRotationVec(1.0F).normalize();
+        Vec3d startPos  = user.getPos();
 
-        spawnParticles(world, user);
-        world.playSound(null, user.getX(), user.getY(), user.getZ(), ModSounds.SANGUINE_DASH, SoundCategory.PLAYERS);
+        PLAYER_DASH.put(user.getUuid(), new DashData(
+                user.getUuid(),
+                direction,
+                startPos,
+                4,     // ticksLeft
+                1.5,   // speed
+                player -> {
+                    DashData dash = PLAYER_DASH.get(player.getUuid());
+                    if (dash == null) return;
 
-        // Apply after dash finishes
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            ServerPlayerEntity player = server.getPlayerManager().getPlayer(user.getUuid());
-            DashData dash = PLAYER_DASH.get(user.getUuid());
-            if (player != null && dash != null && dash.ticksLeft == 0) {
-                double traveled = player.getPos().distanceTo(dash.startPos);
-                Box dashBox = player.getBoundingBox().stretch(dash.direction.multiply(traveled)).expand(1.5);
+                    // Vector from current end position BACK to where we started
+                    Vec3d backToStart = dash.startPos.subtract(player.getPos());
 
-                for (LivingEntity target : player.getWorld().getEntitiesByClass(LivingEntity.class, dashBox, e -> e.isAlive() && e != player)) {
-                    attackWithMultiplier(player, target, 1.0f);
-                    spawnSweepParticle(player.getWorld(), target);
+                    // Build a swept box that covers the whole path (start BB union end BB)
+                    Box pathBox = player.getBoundingBox()
+                            .union(player.getBoundingBox().offset(backToStart))
+                            .expand(1.5); // thickness so we don't miss slightly off-center mobs
+
+                    for (LivingEntity target : player.getWorld().getEntitiesByClass(
+                            LivingEntity.class, pathBox, e -> e.isAlive() && e != player)) {
+                        attackWithMultiplier(player, target, 1.0f);
+                        spawnParticles(player.getWorld(), target);
+                    }
                 }
-            }
-        });
+        ));
+
+        // Start SFX
+        spawnParticles(world, user);
+        world.playSound(null, user.getX(), user.getY(), user.getZ(),
+                ModSounds.SANGUINE_DASH, SoundCategory.PLAYERS);
     }
 
+    // === Skill Two: Paralysis ===
     private void skillTwo_BleedingDash(World world, PlayerEntity user) {
         if (user instanceof ServerPlayerEntity sp)
             sp.sendMessage(Text.literal("Blood Arts: Paralysis").formatted(Formatting.RED), true);
 
-        Vec3d look = user.getRotationVec(1.0F).normalize();
-        PLAYER_DASH.put(user.getUuid(), new DashData(look, user.getPos(), 4, 1.5));
+        Vec3d direction = user.getRotationVec(1.0F).normalize();
+        Vec3d startPos  = user.getPos();
+
+        PLAYER_DASH.put(user.getUuid(), new DashData(
+                user.getUuid(),
+                direction,
+                startPos,
+                4,   // ticksLeft
+                1.0, // speed
+                player -> {
+                    DashData dash = PLAYER_DASH.get(player.getUuid());
+                    if (dash == null) return;
+
+                    // Sweep path
+                    Vec3d backToStart = dash.startPos.subtract(player.getPos());
+                    Box pathBox = player.getBoundingBox()
+                            .union(player.getBoundingBox().offset(backToStart))
+                            .expand(3);
+
+                    for (LivingEntity target : player.getWorld().getEntitiesByClass(
+                            LivingEntity.class, pathBox, e -> e.isAlive() && e != player)) {
+                        freezeEntity(target, 40);
+                        attackWithMultiplier(player, target, 1.5f);
+                        spawnParticles(player.getWorld(), target);
+                    }
+                }
+        ));
 
         spawnParticles(world, user);
-        world.playSound(null, user.getX(), user.getY(), user.getZ(), ModSounds.SANGUINE_DASH, SoundCategory.PLAYERS);
-
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            ServerPlayerEntity player = server.getPlayerManager().getPlayer(user.getUuid());
-            DashData dash = PLAYER_DASH.get(user.getUuid());
-            if (player != null && dash != null && dash.ticksLeft == 0) {
-                double traveled = player.getPos().distanceTo(dash.startPos);
-                Box dashBox = player.getBoundingBox().stretch(dash.direction.multiply(traveled)).expand(3.0);
-
-                for (LivingEntity target : player.getWorld().getEntitiesByClass(LivingEntity.class, dashBox, e -> e.isAlive() && e != player)) {
-                    freezeEntity(target, 40);
-                    attackWithMultiplier(player, target, 1.5f);
-                    spawnSweepParticle(player.getWorld(), target);
-                }
-            }
-        });
+        world.playSound(null, user.getX(), user.getY(), user.getZ(),
+                ModSounds.SANGUINE_DASH, SoundCategory.PLAYERS);
     }
 
+    // === Skill Three: Crimson Fireworks ===
     private void skillThree_BleedingDash(World world, PlayerEntity user) {
         if (user instanceof ServerPlayerEntity sp)
             sp.sendMessage(Text.literal("Blood Arts: Crimson Fireworks").formatted(Formatting.DARK_RED), true);
 
-        Vec3d look = user.getRotationVec(1.0F).normalize();
-        PLAYER_DASH.put(user.getUuid(), new DashData(look, user.getPos(), 4, 2.5));
+        Vec3d direction = user.getRotationVec(1.0F).normalize();
+        Vec3d startPos  = user.getPos();
+
+        PLAYER_DASH.put(user.getUuid(), new DashData(
+                user.getUuid(),
+                direction,
+                startPos,
+                4,   // ticksLeft
+                1.5, // speed
+                player -> {
+                    DashData dash = PLAYER_DASH.get(player.getUuid());
+                    if (dash == null) return;
+
+                    // Sweep path
+                    Vec3d backToStart = dash.startPos.subtract(player.getPos());
+                    Box pathBox = player.getBoundingBox()
+                            .union(player.getBoundingBox().offset(backToStart))
+                            .expand(2.5); // wider sweep for ultimate
+
+                    for (LivingEntity target : player.getWorld().getEntitiesByClass(
+                            LivingEntity.class, pathBox, e -> e.isAlive() && e != player)) {
+                        attackWithMultiplier(player, target, 2.0f);
+                        pullEntity(target, player);
+                        spawnParticles(player.getWorld(), target);
+                    }
+
+                    // Freeze player, then trigger delayed explosion
+                    freezeEntity(player, 40);
+                    SKILL_THREE_DELAYED_ATTACK.put(player.getUuid(), new DelayedExplosion(player.getUuid(), this, 40));
+                }
+        ));
 
         spawnParticles(world, user);
-        world.playSound(null, user.getX(), user.getY(), user.getZ(), ModSounds.SANGUINE_DASH, SoundCategory.PLAYERS);
-
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            ServerPlayerEntity player = server.getPlayerManager().getPlayer(user.getUuid());
-            DashData dash = PLAYER_DASH.get(user.getUuid());
-            if (player != null && dash != null && dash.ticksLeft == 0) {
-                double traveled = player.getPos().distanceTo(dash.startPos);
-                Box dashBox = player.getBoundingBox().stretch(dash.direction.multiply(traveled)).expand(3.0);
-
-                for (LivingEntity target : player.getWorld().getEntitiesByClass(LivingEntity.class, dashBox, e -> e.isAlive() && e != player)) {
-                    attackWithMultiplier(player, target, 2.0f);
-                    pullEntity(target, player);
-                    spawnSweepParticle(player.getWorld(), target);
-                }
-
-                // Freeze player, then trigger delayed explosion
-                freezeEntity(player, 40);
-                SKILL_THREE_DELAYED_ATTACK.put(player.getUuid(), new DelayedExplosion(player.getUuid(), this, 40));
-            }
-        });
+        world.playSound(null, user.getX(), user.getY(), user.getZ(),
+                ModSounds.SANGUINE_DASH, SoundCategory.PLAYERS);
     }
 
 
@@ -318,21 +410,11 @@ public class SanguineSwordItem extends SwordItem {
         ENTITY_PULL.put(target.getUuid(), new PullData(target.getUuid(), player.getUuid(), 10));
     }
 
-    protected void spawnSweepParticle(World world, LivingEntity target) {
-        if (world instanceof ServerWorld sw) {
-            sw.spawnParticles(
-                    new DustParticleEffect(new Vector3f(0.9F, 0.0F, 0.0F), 2.5F),
-                    target.getX(), target.getBodyY(0.5), target.getZ(),
-                    30, 0.8, 0.8, 0.8, 0.0
-            );
-        }
-    }
-
-    private void spawnParticles(World world, PlayerEntity user) {
+    private void spawnParticles(World world, LivingEntity target) {
         if (world instanceof ServerWorld sw) {
             sw.spawnParticles(
                     new DustParticleEffect(new Vector3f(1.0F, 0.1F, 0.1F), 2.8F),
-                    user.getX(), user.getBodyY(0.5), user.getZ(),
+                    target.getX(), target.getBodyY(0.5), target.getZ(),
                     120, 1.2, 1.2, 1.2, 0.1
             );
         }
@@ -349,16 +431,21 @@ public class SanguineSwordItem extends SwordItem {
 
     // === Data Classes ===
     private static class DashData {
+        final UUID playerId;
         final Vec3d direction;
-        final Vec3d startPos; // NEW: starting position for dynamic dash length
+        final Vec3d startPos;
         int ticksLeft;
         final double speed;
+        final Consumer<ServerPlayerEntity> onComplete;
 
-        DashData(Vec3d direction, Vec3d startPos, int ticksLeft, double speed) {
+        DashData(UUID playerId, Vec3d direction, Vec3d startPos, int ticksLeft, double speed,
+                 Consumer<ServerPlayerEntity> onComplete) {
+            this.playerId = playerId;
             this.direction = direction;
             this.startPos = startPos;
             this.ticksLeft = ticksLeft;
             this.speed = speed;
+            this.onComplete = onComplete;
         }
     }
     private static class DelayedExplosion {

@@ -12,5 +12,6 @@
   "effect.lycoris-awakening.death" : "Death",
 
   "itemgroup.lycoris-awakening.lycoris_awakening_items" : "Lycoris Awakening Items",
-  "itemgroup.lycoris-awakening.lycoris_awakening_blocks" : "Lycoris Awakening Blocks"
+  "itemgroup.lycoris-awakening.lycoris_awakening_blocks" : "Lycoris Awakening Blocks",
+  "itemgroup.lycoris-awakening.lycoris_awakening_tools" : "Lycoris Awakening Tools"
 }

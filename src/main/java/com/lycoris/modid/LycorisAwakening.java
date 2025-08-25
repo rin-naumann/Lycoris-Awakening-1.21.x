@@ -6,6 +6,7 @@ import com.lycoris.modid.effect.ModEffects;
 import com.lycoris.modid.item.ModItemGroups;
 import com.lycoris.modid.item.ModItems;
 import com.lycoris.modid.sound.ModSounds;
+import com.lycoris.modid.world.ModDimensions;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ public class LycorisAwakening implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		ModDimensions.registerDimensions();
 		ModSounds.registerSounds();
 		ModEffects.registerEffects();
 		ModItemGroups.registerItemGroups();
