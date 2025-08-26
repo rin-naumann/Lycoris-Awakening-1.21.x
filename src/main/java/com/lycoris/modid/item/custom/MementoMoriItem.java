@@ -2,7 +2,10 @@ package com.lycoris.modid.item.custom;
 
 import com.lycoris.modid.component.ModDataComponentTypes;
 import com.lycoris.modid.effect.ModEffects;
+import com.lycoris.modid.util.CooldownBarManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
@@ -15,16 +18,19 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.HoeItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.SwordItem;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -32,7 +38,7 @@ import net.minecraft.world.World;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MementoMoriItem extends HoeItem {
+public class MementoMoriItem extends SwordItem {
 
     // == Reaper State Helpers ==
     public static boolean getReaperState(ItemStack stack){
@@ -51,6 +57,26 @@ public class MementoMoriItem extends HoeItem {
     // --- Server tick handler ---
     static {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+
+            // --- Cooldown Handler ---
+            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                ItemStack held = player.getMainHandStack();
+                if (held.getItem() instanceof SanguineSwordItem) {
+                    int skillCd = held.getOrDefault(ModDataComponentTypes.SKILL_COOLDOWN, 0);
+                    if (skillCd > 0) {
+                        held.set(ModDataComponentTypes.SKILL_COOLDOWN, skillCd - 1);
+                    }
+                    int ultCd = held.getOrDefault(ModDataComponentTypes.ULTIMATE_COOLDOWN, 0);
+                    if (ultCd > 0) {
+                        held.set(ModDataComponentTypes.ULTIMATE_COOLDOWN, ultCd + 1);
+                    }
+                    CooldownBarManager.updateSkillBar(player, held.getOrDefault(ModDataComponentTypes.SKILL_COOLDOWN, 0), 200);
+                    CooldownBarManager.updateUltimateBar(player, held.getOrDefault(ModDataComponentTypes.ULTIMATE_COOLDOWN, 0), 1200);
+                } else {
+                    CooldownBarManager.clearAll(player);
+                }
+            }
+
             // --- Reaper trails (always on when Reaper State is active) ---
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                 if (!player.isAlive()) continue;
@@ -187,7 +213,7 @@ public class MementoMoriItem extends HoeItem {
 
                 if (ticks <= 0) {
                     setReaperState(player.getMainHandStack(), false);
-                    player.getItemCooldownManager().set(player.getMainHandStack().getItem(), 20 * 60);
+                    player.getMainHandStack().set(ModDataComponentTypes.ULTIMATE_COOLDOWN, 20 * 60); // 1 minute
                     it.remove();
                 } else {
                     e.setValue(ticks - 1);
@@ -200,6 +226,28 @@ public class MementoMoriItem extends HoeItem {
         super(toolMaterial, settings);
     }
 
+    // == Added Hoe Functionality (why not)
+    @Override
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        World world = context.getWorld();
+        BlockPos pos = context.getBlockPos();
+        PlayerEntity player = context.getPlayer();
+        ItemStack stack = context.getStack();
+
+        // Hoe functionality: till dirt, grass, etc.
+        BlockState state = world.getBlockState(pos);
+        if (state.isOf(Blocks.GRASS_BLOCK) || state.isOf(Blocks.DIRT)) {
+            if (!world.isClient) {
+                world.setBlockState(pos, Blocks.FARMLAND.getDefaultState(), 11);
+                assert player != null;
+                stack.damage(1, player, LivingEntity.getSlotForHand(context.getHand()));
+            }
+            return ActionResult.success(world.isClient);
+        }
+
+        return super.useOnBlock(context);
+    }
+
     // == Use Handling ==
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
@@ -207,15 +255,29 @@ public class MementoMoriItem extends HoeItem {
 
         if(!world.isClient){
             boolean ReaperState = getReaperState(stack);
+            int skillCld = stack.getOrDefault(ModDataComponentTypes.SKILL_COOLDOWN, 0);
+            int ultCld = stack.getOrDefault(ModDataComponentTypes.ULTIMATE_COOLDOWN, 0);
 
             if(!user.isSneaking()){
                 if(ReaperState){
-                    reaperSkill_NoEscape(world, user);
+                    if(!(skillCld > 0)){
+                        reaperSkill_NoEscape(world, user);
+                        stack.set(ModDataComponentTypes.SKILL_COOLDOWN, 20 * 2); // 2s
+                    } else {
+
+                    }
+
                 } else {
-                    skillOne_DeathMist(world, user);
+                    if(!(skillCld > 0)){
+                        skillOne_DeathMist(world, user);
+                        stack.set(ModDataComponentTypes.SKILL_COOLDOWN, 20 * 10); // 10s
+                    }
+
                 }
             } else {
-                skillTwo_DeathPossession(user, stack);
+                if(!(ultCld > 0)){
+                    skillTwo_DeathPossession(user, stack);
+                }
             }
         }
 
@@ -382,10 +444,6 @@ public class MementoMoriItem extends HoeItem {
             this.radius = radius;
             this.damageRadius = damageRadius;
             this.baseAngle = baseAngle;
-        }
-
-        void dealTrueDamage(PlayerEntity user, LivingEntity target) {
-            source.dealTrueDamage(user, target);
         }
     }
 

@@ -60,7 +60,6 @@ public class SanguineSwordItem extends SwordItem {
                     if (ultCd > 0) {
                         held.set(ModDataComponentTypes.ULTIMATE_COOLDOWN, ultCd - 1);
                     }
-
                     CooldownBarManager.updateSkillBar(player, held.getOrDefault(ModDataComponentTypes.SKILL_COOLDOWN, 0), 200);
                     CooldownBarManager.updateUltimateBar(player, held.getOrDefault(ModDataComponentTypes.ULTIMATE_COOLDOWN, 0), 600);
                 } else {
