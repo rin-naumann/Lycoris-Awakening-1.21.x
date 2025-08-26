@@ -45,6 +45,12 @@ public class ModItems {
     public static final Item MEMENTO_MORI = registerItem("memento_mori", new MementoMoriItem(ToolMaterials.NETHERITE, new Item.Settings()
             .attributeModifiers(SwordItem.createAttributeModifiers(ToolMaterials.NETHERITE, 6, -3.0f))
     ));
+    public static final Item LUCIDITY = registerItem("lucidity", new MementoMoriItem(ToolMaterials.NETHERITE, new Item.Settings()
+            .attributeModifiers(SwordItem.createAttributeModifiers(ToolMaterials.NETHERITE, 6, -3.0f))
+    ));
+    public static final Item DELUSION = registerItem("delusion", new MementoMoriItem(ToolMaterials.NETHERITE, new Item.Settings()
+            .attributeModifiers(SwordItem.createAttributeModifiers(ToolMaterials.NETHERITE, 6, -3.0f))
+    ));
 
     // New Enchantments
 

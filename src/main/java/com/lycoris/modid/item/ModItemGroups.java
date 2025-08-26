@@ -39,6 +39,8 @@ public class ModItemGroups {
                         entries.add(ModItems.LYCORITE_SHOVEL);
                         entries.add(ModItems.LYCORITE_HOE);
                         entries.add(ModItems.MEMENTO_MORI);
+                        entries.add(ModItems.DELUSION);
+                        entries.add(ModItems.LUCIDITY);
 
                     }).build());
 
