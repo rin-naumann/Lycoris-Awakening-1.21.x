@@ -2,10 +2,10 @@ package com.lycoris.modid.item;
 
 import com.lycoris.modid.LycorisAwakening;
 import com.lycoris.modid.item.custom.LifeInfuserItem;
+import com.lycoris.modid.item.custom.dualblades.LucidityItem;
 import com.lycoris.modid.item.custom.MementoMoriItem;
 import com.lycoris.modid.item.custom.SanguineSwordItem;
 import com.lycoris.modid.item.custom.dualblades.DelusionItem;
-import com.lycoris.modid.item.custom.dualblades.LucidityItem;
 import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -40,7 +40,7 @@ public class ModItems {
 
     // Special Items
     public static final Item SANGUINE_SOLILOQUY = registerItem("sanguine_soliloquy", new SanguineSwordItem(ModToolMaterials.LYCORITE, new Item.Settings()
-            .attributeModifiers(SwordItem.createAttributeModifiers(ModToolMaterials.LYCORITE, 5, 1.5f))
+            .attributeModifiers(SwordItem.createAttributeModifiers(ModToolMaterials.LYCORITE, 5, -1.5f))
     ));
     public static final Item MEMENTO_MORI = registerItem("memento_mori", new MementoMoriItem(ToolMaterials.NETHERITE, new Item.Settings()
             .attributeModifiers(SwordItem.createAttributeModifiers(ToolMaterials.NETHERITE, 6, -3.0f))

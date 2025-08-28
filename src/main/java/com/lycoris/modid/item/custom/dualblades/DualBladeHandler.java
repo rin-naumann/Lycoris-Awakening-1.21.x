@@ -1,5 +1,6 @@
 package com.lycoris.modid.item.custom.dualblades;
 
+import com.lycoris.modid.item.custom.dualblades.LucidityItem;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
@@ -32,20 +33,40 @@ import java.util.Map;
 import java.util.UUID;
 
 public class DualBladeHandler {
-    // Tracks active combos per player
     private static final Map<UUID, ComboData> activeCombos = new HashMap<>();
     private static final Map<UUID, Long> lastInputTime = new HashMap<>();
     private static final Map<UUID, SlashAnim> ACTIVE_SLASHES = new HashMap<>();
-    private static final long INPUT_COOLDOWN_MS = 200; // 0.2s debounce
+    private static final long INPUT_COOLDOWN_MS = 200;
+    private static final Map<UUID, Long> comboLockout = new HashMap<>();
+    private static final Map<UUID, Long> cooldownAnnounce = new HashMap<>();
 
     public static void init() {
-        // Server Tick Events
+
+        // Tick Handler
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+            long now = System.currentTimeMillis();
+
             for (PlayerEntity player : server.getPlayerManager().getPlayerList()) {
                 UUID id = player.getUuid();
+
                 ComboData data = activeCombos.get(id);
-                if (data != null && data.isActive()) {
-                    data.tick(player);
+                if (data != null) {
+                    data.tick(player, now);
+                }
+
+                Long lockoutEnd = comboLockout.get(id);
+                if (lockoutEnd != null) {
+                    if (now >= lockoutEnd) {
+                        comboLockout.remove(id);
+                        cooldownAnnounce.remove(id);
+                        player.sendMessage(Text.literal("Combo ready!").formatted(Formatting.GREEN), true);
+                    } else {
+                        long secondsLeft = (lockoutEnd - now) / 1000;
+                        if (secondsLeft != cooldownAnnounce.getOrDefault(id, -1L)) {
+                            cooldownAnnounce.put(id, secondsLeft);
+                            player.sendMessage(Text.literal("Combo on cooldown (" + secondsLeft + "s)").formatted(Formatting.RED), true);
+                        }
+                    }
                 }
 
                 SlashAnim anim = ACTIVE_SLASHES.get(id);
@@ -57,13 +78,12 @@ public class DualBladeHandler {
             }
         });
 
-        // Left-clicks
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (!world.isClient && hasDualBlades(player)) {
                 handleLeftClick(player, hand);
-                return ActionResult.FAIL; // prevent vanilla attack
+                return ActionResult.FAIL;
             }
-            return ActionResult.PASS; // normal attack for other weapons
+            return ActionResult.PASS;
         });
 
         AttackBlockCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
@@ -73,7 +93,6 @@ public class DualBladeHandler {
             return ActionResult.PASS;
         });
 
-        // Right-clicks
         UseItemCallback.EVENT.register((player, world, hand) -> {
             if (!world.isClient) {
                 handleRightClick(player, hand);
@@ -104,6 +123,12 @@ public class DualBladeHandler {
         UUID id = player.getUuid();
         long now = System.currentTimeMillis();
 
+        Long lockoutEnd = comboLockout.get(id);
+        if (lockoutEnd != null && now < lockoutEnd) {
+            player.sendMessage(Text.literal("Combo unavailable (" + ((lockoutEnd - now) / 1000) + "s)").formatted(Formatting.RED), true);
+            return;
+        }
+
         long last = lastInputTime.getOrDefault(id, 0L);
         if (now - last < INPUT_COOLDOWN_MS) return;
         lastInputTime.put(id, now);
@@ -112,44 +137,46 @@ public class DualBladeHandler {
 
         if (data.isWaitingFor(input)) {
             data.advanceCombo(player, hand);
-            triggerArcAttack(player, hand, input); // 🔥 spawn slash attack+anim here
+            triggerArcAttack(player, hand, input);
+
+            // 🔥 Nudge forward if in flow state
+            if (data.isInFlow()) {
+                Vec3d look = player.getRotationVec(1.0F).normalize();
+                double nudgeStrength = 0.25;
+                player.addVelocity(look.x * nudgeStrength, 0, look.z * nudgeStrength);
+                player.velocityModified = true;
+            }
         } else {
-            player.sendMessage(Text.literal("Combo Lost").formatted(Formatting.RED), true);
-            data.reset();
+            data.reset(player);
         }
         activeCombos.put(id, data);
     }
 
-    // === Helper Methods ===
+    // === Damage + Arc ===
     public static void attackWithMultiplier(PlayerEntity user, LivingEntity target, Hand hand, float multiplier) {
         if (user.getWorld().isClient) return;
 
         ServerWorld sw = (ServerWorld) user.getWorld();
         ItemStack stack = user.getStackInHand(hand);
 
-        // Base + enchantments
         float baseDamage = (float) user.getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
         float enchBonus = EnchantmentHelper.getDamage(sw, stack, target, user.getDamageSources().playerAttack(user), baseDamage);
         float totalDamage = (baseDamage + enchBonus) * multiplier;
 
-        // Critical check
         boolean crit = user.fallDistance > 0.0F && !user.isOnGround() && !user.isClimbing()
                 && !user.isTouchingWater() && !user.hasStatusEffect(StatusEffects.BLINDNESS)
                 && !user.hasVehicle() && !user.isSprinting();
         if (crit) totalDamage *= 1.5F;
 
-        // Fire aspect
         ItemEnchantmentsComponent enchComp = stack.getOrDefault(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
         int fireLevel = enchComp.getLevel(sw.getRegistryManager().get(RegistryKeys.ENCHANTMENT).entryOf(Enchantments.FIRE_ASPECT));
         if (fireLevel > 0) target.setOnFireFor(4 * fireLevel);
 
-        // Deal damage
         DamageSource src = user.getDamageSources().playerAttack(user);
         target.timeUntilRegen = 0;
         target.damage(src, totalDamage);
         target.timeUntilRegen = 0;
 
-        // Durability
         EquipmentSlot slot = (hand == Hand.MAIN_HAND) ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
         stack.damage(1, user, slot);
     }
@@ -162,7 +189,6 @@ public class DualBladeHandler {
         double coneCos = Math.cos(Math.toRadians(coneDeg));
         Vec3d look = user.getRotationVec(1.0F).normalize();
 
-        // --- Deal damage once ---
         List<LivingEntity> nearby = sw.getEntitiesByClass(
                 LivingEntity.class,
                 user.getBoundingBox().expand(attackRadius),
@@ -182,17 +208,14 @@ public class DualBladeHandler {
             }
         }
 
-        // --- Lock yaw and tilt ---
-        double baseYaw = Math.toRadians(user.getYaw()); // radians at attack start
+        double baseYaw = Math.toRadians(user.getYaw());
         double randomTilt = Math.toRadians(-45 + sw.random.nextInt(91));
 
-        // Slash arc centered on look direction
-        double sweepRange = Math.PI; // 180° fixed
-        double offset = Math.toRadians(90); // rotate entire slash 90° to the right
+        double sweepRange = Math.PI;
+        double offset = Math.toRadians(90);
         double start = -sweepRange / 2 + offset;
-        double end   = +sweepRange / 2 + offset;
+        double end = +sweepRange / 2 + offset;
 
-        // Flip sweep direction
         if ("LEFT".equals(input)) {
             double tmp = start;
             start = end;
@@ -200,6 +223,11 @@ public class DualBladeHandler {
         }
 
         ACTIVE_SLASHES.put(user.getUuid(), new SlashAnim(start, end, 3.0, 5, randomTilt, baseYaw));
+
+        // --- Short forward dash ---
+        Vec3d dash = look.multiply(0.25); // 0.25 = ~0.25 block push
+        user.addVelocity(dash.x, 0, dash.z);
+        user.velocityModified = true; // force client sync
     }
 
     private static boolean animateSlash(PlayerEntity player, SlashAnim anim) {
@@ -213,30 +241,26 @@ public class DualBladeHandler {
         double arcHalfWidth = Math.toRadians(12);
         int samples = 24;
 
-        // Position at chest height, slightly forward
         double yBase = player.getBodyY(0.9);
         Vec3d look = player.getRotationVec(1.0F).normalize();
         double forwardOffset = 0.6;
         double cx = player.getX() + look.x * forwardOffset;
         double cz = player.getZ() + look.z * forwardOffset;
 
-        // Use locked yaw from trigger time
         double yawRad = anim.baseYaw;
         double tilt = anim.tilt;
 
         for (int s = 0; s < samples; s++) {
-            double t = (s / (double)(samples - 1)) * 2.0 - 1.0;
+            double t = (s / (double) (samples - 1)) * 2.0 - 1.0;
             double a = localAngle + t * arcHalfWidth;
 
             for (double offset = 0.2; offset <= anim.radius; offset += 0.25) {
                 double lx = Math.cos(a) * offset;
                 double lz = Math.sin(a) * offset;
 
-                // --- Apply tilt (around local Z axis, so left vs right edges are offset in Y) ---
                 double ly = lx * Math.sin(tilt);
                 double lxTilted = lx * Math.cos(tilt);
 
-                // Rotate arc into world using yaw
                 double wx = lxTilted * Math.cos(yawRad) - lz * Math.sin(yawRad);
                 double wz = lxTilted * Math.sin(yawRad) + lz * Math.cos(yawRad);
                 double wy = yBase + ly;
@@ -254,7 +278,6 @@ public class DualBladeHandler {
         return anim.ticksLeft > 0;
     }
 
-    // === SlashAnim ===
     public static class SlashAnim {
         public final double start;
         public final double end;
@@ -262,7 +285,7 @@ public class DualBladeHandler {
         public final int totalTicks;
         public int ticksLeft;
         public final double tilt;
-        public final double baseYaw; // locked at trigger
+        public final double baseYaw;
 
         public SlashAnim(double start, double end, double radius, int totalTicks, double tilt, double baseYaw) {
             this.start = start;
@@ -275,13 +298,13 @@ public class DualBladeHandler {
         }
     }
 
-
     private static class ComboData {
         private String expected = "LEFT";
         private int successCount = 0;
-        private long expireTime = 0; // ms timestamp
-        private long lastAnnounce = 0; // last second announced
+        private long expireTime = 0;
+        private long lastAnnounce = -1;
         private Hand lastUsedHand = Hand.MAIN_HAND;
+        private String lastMessage = "";
 
         public boolean isWaitingFor(String input) {
             return input.equals(expected);
@@ -291,54 +314,74 @@ public class DualBladeHandler {
             successCount++;
             lastUsedHand = hand;
 
-            // Roll a coin flip: 50% LEFT, 50% RIGHT
-            expected = Math.random() < 0.5 ? "LEFT" : "RIGHT";
-
-            player.sendMessage(Text.literal(successCount + " || Next : " + expected), true);
-
+            long windowMs;
             if (successCount >= 3) {
                 enterFlowState(player);
             }
+
+            if (successCount < 10) {
+                windowMs = 2000;
+            } else {
+                double reduced = 1.0 - 0.1 * (successCount - 10);
+                if (reduced < 0.5) reduced = 0.5;
+                windowMs = (long) (reduced * 1000);
+            }
+
+            expireTime = System.currentTimeMillis() + windowMs;
+
+            expected = Math.random() < 0.5 ? "LEFT" : "RIGHT";
+
+            player.sendMessage(Text.literal("Combo : " + successCount +
+                            " || Next : " + expected + " (" + formatTime(windowMs) + ")")
+                    .formatted(Formatting.GOLD), true);
+
+            lastAnnounce = -1;
         }
 
-        public void reset() {
+        public void reset(PlayerEntity player) {
             expected = "LEFT";
             successCount = 0;
             expireTime = 0;
-            lastAnnounce = 0;
+            lastAnnounce = -1;
             lastUsedHand = Hand.MAIN_HAND;
+
+            comboLockout.put(player.getUuid(), System.currentTimeMillis() + 5000);
+            player.sendMessage(Text.literal("Combo broken! 5s cooldown...").formatted(Formatting.RED), true);
         }
 
-        public boolean isExpired() {
-            return expireTime > 0 && System.currentTimeMillis() > expireTime;
-        }
+        public void tick(PlayerEntity player, long now) {
+            if (expireTime == 0) return;
 
-        public boolean isActive() {
-            return expireTime > 0;
-        }
-
-        public void tick(PlayerEntity player) {
-            if (!isActive()) return;
-
-            long timeLeft = (expireTime - System.currentTimeMillis()) / 1000;
-
-            // Expired?
-            if (timeLeft < 0) {
-                player.sendMessage(Text.literal("Combo expired!"), true);
-                reset();
+            long timeLeftMs = expireTime - now;
+            if (timeLeftMs <= 0) {
+                reset(player);
                 return;
             }
 
-            // Announce only when the second changes
-            if (timeLeft < lastAnnounce) {
-                lastAnnounce = timeLeft;
-                player.sendMessage(Text.literal("Next Input: " + expected + " (" + timeLeft + "s)"), true);
+            String display = formatTime(timeLeftMs);
+
+            String msg = "Combo : " + successCount + " || Next : " + expected + " (" + display + ")";
+            if (!msg.equals(lastMessage)) {
+                lastMessage = msg;
+                player.sendMessage(Text.literal(msg).formatted(Formatting.GOLD), true);
+            }
+        }
+
+        private String formatTime(long ms) {
+            if (ms < 1000) {
+                return String.format("%.1fs", ms / 1000.0);
+            } else {
+                return (ms / 1000) + "s";
             }
         }
 
         private void enterFlowState(PlayerEntity player) {
             player.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 200, 1, true, false));
             player.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 200, 0, true, false));
+        }
+
+        public boolean isInFlow() {
+            return successCount >= 3 && expireTime > System.currentTimeMillis();
         }
     }
 }
