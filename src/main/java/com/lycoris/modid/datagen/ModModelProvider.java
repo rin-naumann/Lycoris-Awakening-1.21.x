@@ -33,6 +33,7 @@ public class ModModelProvider extends FabricModelProvider {
         itemModelGenerator.register(ModItems.LYCORITE_SWORD, Models.HANDHELD);
         itemModelGenerator.register(ModItems.SANGUINE_SOLILOQUY, Models.HANDHELD);
         itemModelGenerator.register(ModItems.MEMENTO_MORI, Models.HANDHELD);
-
+        itemModelGenerator.register(ModItems.DELUSION, Models.HANDHELD);
+        itemModelGenerator.register(ModItems.LUCIDITY, Models.HANDHELD);
     }
 }

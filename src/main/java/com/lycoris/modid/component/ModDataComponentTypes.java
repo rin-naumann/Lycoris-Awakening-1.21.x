@@ -2,9 +2,7 @@ package com.lycoris.modid.component;
 
 import com.lycoris.modid.LycorisAwakening;
 import com.mojang.serialization.Codec;
-import net.minecraft.component.Component;
 import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
@@ -23,6 +21,11 @@ public class ModDataComponentTypes {
             "ultimate_cooldown",
             builder -> builder.codec(Codecs.NONNEGATIVE_INT)
     );
+    public static final ComponentType<Integer> ABILITY_DURATION = register(
+            "ability_duration",
+            builder -> builder.codec(Codecs.NONNEGATIVE_INT)
+    );
+
 
     //SPECIAL WEAPON COMPONENTS
     public static final ComponentType<Integer> SANGUINE_CHARGES = register(

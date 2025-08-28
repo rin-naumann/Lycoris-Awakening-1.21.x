@@ -11,63 +11,50 @@ import java.util.UUID;
 
 public class CooldownBarManager {
 
-    private static final Map<UUID, ServerBossBar> SKILL_BARS = new HashMap<>();
-    private static final Map<UUID, ServerBossBar> ULTIMATE_BARS = new HashMap<>();
+    // Keyed by (playerUUID + abilityName)
+    private static final Map<String, ServerBossBar> ACTIVE_BARS = new HashMap<>();
 
-    // === Skill Cooldown ===
-    public static void updateSkillBar(ServerPlayerEntity player, int cooldown, int maxCooldown) {
-        UUID id = player.getUuid();
+    private static String key(UUID playerId, String abilityName) {
+        return playerId.toString() + "::" + abilityName;
+    }
 
-        if (cooldown > 0) {
-            ServerBossBar bar = SKILL_BARS.computeIfAbsent(id, uuid ->
-                    new ServerBossBar(Text.literal("Skill Cooldown"), BossBar.Color.RED, BossBar.Style.NOTCHED_10)
+    private static void updateBar(ServerPlayerEntity player,
+                                  String abilityName,
+                                  BossBar.Color color,
+                                  int current,
+                                  int max) {
+        String key = key(player.getUuid(), abilityName);
+
+        if (current > 0) {
+            ServerBossBar bar = ACTIVE_BARS.computeIfAbsent(key,
+                    k -> new ServerBossBar(Text.literal(abilityName), color, BossBar.Style.NOTCHED_10)
             );
             if (!bar.getPlayers().contains(player)) {
                 bar.addPlayer(player);
             }
-            float progress = Math.max(0.0F, Math.min(1.0F, cooldown / (float) maxCooldown));
+            float progress = Math.max(0.0F, Math.min(1.0F, current / (float) max));
             bar.setPercent(progress);
         } else {
-            removeSkillBar(player);
+            removeBar(player, abilityName);
         }
     }
 
-    public static void removeSkillBar(ServerPlayerEntity player) {
-        ServerBossBar bar = SKILL_BARS.remove(player.getUuid());
+    public static void updateSkillBar(ServerPlayerEntity player, String abilityName, int cooldown, int maxCooldown) {
+        updateBar(player, abilityName, BossBar.Color.RED, cooldown, maxCooldown);
+    }
+
+    public static void updateUltimateBar(ServerPlayerEntity player, String abilityName, int cooldown, int maxCooldown) {
+        updateBar(player, abilityName, BossBar.Color.PURPLE, cooldown, maxCooldown);
+    }
+
+    public static void updateDurationBar(ServerPlayerEntity player, String abilityName, int current, int max) {
+        updateBar(player, abilityName, BossBar.Color.YELLOW, current, max);
+    }
+
+    public static void removeBar(ServerPlayerEntity player, String abilityName) {
+        ServerBossBar bar = ACTIVE_BARS.remove(key(player.getUuid(), abilityName));
         if (bar != null) {
             bar.removePlayer(player);
         }
-    }
-
-    // === Ultimate Cooldown ===
-    public static void updateUltimateBar(ServerPlayerEntity player, int cooldown, int maxCooldown) {
-        UUID id = player.getUuid();
-
-        if (cooldown > 0) {
-            ServerBossBar bar = ULTIMATE_BARS.computeIfAbsent(id, uuid ->
-                    new ServerBossBar(Text.literal("Ultimate Cooldown"), BossBar.Color.PURPLE, BossBar.Style.NOTCHED_10)
-            );
-            if (!bar.getPlayers().contains(player)) {
-                bar.addPlayer(player);
-            }
-            float progress = Math.max(0.0F, Math.min(1.0F, cooldown / (float) maxCooldown));
-            bar.setPercent(progress);
-        } else {
-            removeUltimateBar(player);
-        }
-    }
-
-    public static void removeUltimateBar(ServerPlayerEntity player) {
-        ServerBossBar bar = ULTIMATE_BARS.remove(player.getUuid());
-        if (bar != null) {
-            bar.removePlayer(player);
-        }
-    }
-
-    // Cleanup when player leaves
-    public static void clearAll(ServerPlayerEntity player) {
-        removeSkillBar(player);
-        removeUltimateBar(player);
     }
 }
-

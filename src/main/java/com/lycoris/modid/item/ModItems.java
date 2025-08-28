@@ -4,12 +4,12 @@ import com.lycoris.modid.LycorisAwakening;
 import com.lycoris.modid.item.custom.LifeInfuserItem;
 import com.lycoris.modid.item.custom.MementoMoriItem;
 import com.lycoris.modid.item.custom.SanguineSwordItem;
+import com.lycoris.modid.item.custom.dualblades.DelusionItem;
+import com.lycoris.modid.item.custom.dualblades.LucidityItem;
 import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
-
-import javax.tools.Tool;
 
 public class ModItems {
 
@@ -43,6 +43,12 @@ public class ModItems {
             .attributeModifiers(SwordItem.createAttributeModifiers(ModToolMaterials.LYCORITE, 5, 1.5f))
     ));
     public static final Item MEMENTO_MORI = registerItem("memento_mori", new MementoMoriItem(ToolMaterials.NETHERITE, new Item.Settings()
+            .attributeModifiers(SwordItem.createAttributeModifiers(ToolMaterials.NETHERITE, 6, -3.0f))
+    ));
+    public static final Item LUCIDITY = registerItem("lucidity", new LucidityItem(ToolMaterials.NETHERITE, new Item.Settings()
+            .attributeModifiers(SwordItem.createAttributeModifiers(ToolMaterials.NETHERITE, 6, -3.0f))
+    ));
+    public static final Item DELUSION = registerItem("delusion", new DelusionItem(ToolMaterials.NETHERITE, new Item.Settings()
             .attributeModifiers(SwordItem.createAttributeModifiers(ToolMaterials.NETHERITE, 6, -3.0f))
     ));
 

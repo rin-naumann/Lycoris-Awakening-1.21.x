@@ -6,9 +6,9 @@ import com.lycoris.modid.util.CooldownBarManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -21,7 +21,6 @@ import net.minecraft.item.ToolMaterial;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -39,6 +38,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public class SanguineSwordItem extends SwordItem {
+
+    // === Skill Names ===
+    private static final String SKILL_NAME = "Bleeding Dash";
+    private static final String ULT_NAME   = "Crimson Fireworks";
 
     // === Runtime State ===
     private static final Map<UUID, DashData> PLAYER_DASH = new ConcurrentHashMap<>();
@@ -61,10 +64,13 @@ public class SanguineSwordItem extends SwordItem {
                         held.set(ModDataComponentTypes.ULTIMATE_COOLDOWN, ultCd - 1);
                     }
 
-                    CooldownBarManager.updateSkillBar(player, held.getOrDefault(ModDataComponentTypes.SKILL_COOLDOWN, 0), 200);
-                    CooldownBarManager.updateUltimateBar(player, held.getOrDefault(ModDataComponentTypes.ULTIMATE_COOLDOWN, 0), 600);
+                    CooldownBarManager.updateSkillBar(player, SKILL_NAME, skillCd, 20 * 10);
+                    CooldownBarManager.updateUltimateBar(player, ULT_NAME, ultCd, 20 * 30);
+
                 } else {
-                    CooldownBarManager.clearAll(player);
+                    CooldownBarManager.removeBar(player, SKILL_NAME);
+                    CooldownBarManager.removeBar(player, ULT_NAME);
+
                 }
             }
 
@@ -381,24 +387,36 @@ public class SanguineSwordItem extends SwordItem {
     }
 
     // === Helpers ===
-    protected void attackWithMultiplier(PlayerEntity user, LivingEntity target, float multiplier) {
+    public void attackWithMultiplier(PlayerEntity user, LivingEntity target, float multiplier) {
         if (user.getWorld().isClient) return;
-        ItemStack stack = user.getMainHandStack();
-        ServerWorld sw = (ServerWorld) user.getWorld();
 
+        ServerWorld sw = (ServerWorld) user.getWorld();
+        ItemStack stack = user.getMainHandStack();
+
+        // Base + enchantments
         float baseDamage = (float) user.getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
         float enchBonus = EnchantmentHelper.getDamage(sw, stack, target, user.getDamageSources().playerAttack(user), baseDamage);
         float totalDamage = (baseDamage + enchBonus) * multiplier;
 
+        // Critical check
+        boolean crit = user.fallDistance > 0.0F && !user.isOnGround() && !user.isClimbing()
+                && !user.isTouchingWater() && !user.hasStatusEffect(StatusEffects.BLINDNESS)
+                && !user.hasVehicle() && !user.isSprinting();
+        if (crit) totalDamage *= 1.5F;
+
+        // Fire aspect
         ItemEnchantmentsComponent enchComp = stack.getOrDefault(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
-        RegistryEntry<Enchantment> fireAspectEntry = sw.getRegistryManager().get(RegistryKeys.ENCHANTMENT).entryOf(Enchantments.FIRE_ASPECT);
-        int fireLevel = enchComp.getLevel(fireAspectEntry);
+        int fireLevel = enchComp.getLevel(sw.getRegistryManager().get(RegistryKeys.ENCHANTMENT).entryOf(Enchantments.FIRE_ASPECT));
         if (fireLevel > 0) target.setOnFireFor(4 * fireLevel);
 
+        // Deal damage
         DamageSource src = user.getDamageSources().playerAttack(user);
         target.timeUntilRegen = 0;
         target.damage(src, totalDamage);
         target.timeUntilRegen = 0;
+
+        // Durability
+        stack.damage(1, user, EquipmentSlot.MAINHAND);
     }
 
     private void freezeEntity(LivingEntity entity, int durationTicks) {

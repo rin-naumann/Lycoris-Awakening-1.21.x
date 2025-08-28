@@ -5,6 +5,7 @@ import com.lycoris.modid.component.ModDataComponentTypes;
 import com.lycoris.modid.effect.ModEffects;
 import com.lycoris.modid.item.ModItemGroups;
 import com.lycoris.modid.item.ModItems;
+import com.lycoris.modid.item.custom.dualblades.DualBladeHandler;
 import com.lycoris.modid.sound.ModSounds;
 import com.lycoris.modid.world.ModDimensions;
 import net.fabricmc.api.ModInitializer;
@@ -17,12 +18,16 @@ public class LycorisAwakening implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+        //Content registers
 		ModDimensions.registerDimensions();
 		ModSounds.registerSounds();
 		ModEffects.registerEffects();
 		ModItemGroups.registerItemGroups();
 		ModItems.registerModItems();
 		ModBlocks.registerModBlocks();
+
+        //Handler registers
+        DualBladeHandler.init();
 
 		ModDataComponentTypes.registerDataComponentTypes();
 	}

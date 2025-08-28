@@ -2,27 +2,29 @@ package com.lycoris.modid.item.custom;
 
 import com.lycoris.modid.component.ModDataComponentTypes;
 import com.lycoris.modid.effect.ModEffects;
+import com.lycoris.modid.util.CooldownBarManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.HoeItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.SwordItem;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Box;
@@ -32,7 +34,7 @@ import net.minecraft.world.World;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MementoMoriItem extends HoeItem {
+public class MementoMoriItem extends SwordItem {
 
     // == Reaper State Helpers ==
     public static boolean getReaperState(ItemStack stack){
@@ -41,6 +43,11 @@ public class MementoMoriItem extends HoeItem {
     public static void setReaperState(ItemStack stack, boolean state) {
         stack.set(ModDataComponentTypes.REAPER_STATE, state);
     }
+
+    // --- Skill names ---
+    private static final String SKILL_NAME = "Death Mist";
+    private static final String ULT_NAME   = "Death Possession";
+    private static final String DUR_NAME   = "Reaper State";
 
     // --- Enhanced skill runtime ---
     private static final Map<UUID, PullData> ACTIVE_PULLS = new ConcurrentHashMap<>();
@@ -51,6 +58,35 @@ public class MementoMoriItem extends HoeItem {
     // --- Server tick handler ---
     static {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+
+            // --- Handle Cooldown System ---
+            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                ItemStack held = player.getMainHandStack();
+                if (held.getItem() instanceof MementoMoriItem) {
+                    int skillCd = held.getOrDefault(ModDataComponentTypes.SKILL_COOLDOWN, 0);
+                    if (skillCd > 0) {
+                        held.set(ModDataComponentTypes.SKILL_COOLDOWN, skillCd - 1);
+                    }
+                    int ultCd = held.getOrDefault(ModDataComponentTypes.ULTIMATE_COOLDOWN, 0);
+                    if (ultCd > 0) {
+                        held.set(ModDataComponentTypes.ULTIMATE_COOLDOWN, ultCd - 1);
+                    }
+                    int duration = held.getOrDefault(ModDataComponentTypes.ABILITY_DURATION, 0);
+                    if (duration > 0){
+                        held.set(ModDataComponentTypes.ABILITY_DURATION, duration - 1);
+                    }
+
+                    CooldownBarManager.updateSkillBar(player, SKILL_NAME, skillCd, 20 * 10);
+                    CooldownBarManager.updateUltimateBar(player, ULT_NAME, ultCd, 20 * 60);
+                    CooldownBarManager.updateDurationBar(player, DUR_NAME, duration, 20 * 30);
+
+                } else {
+                    CooldownBarManager.removeBar(player, SKILL_NAME);
+                    CooldownBarManager.removeBar(player, ULT_NAME);
+                    CooldownBarManager.removeBar(player, DUR_NAME);
+                }
+            }
+
             // --- Reaper trails (always on when Reaper State is active) ---
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                 if (!player.isAlive()) continue;
@@ -136,7 +172,7 @@ public class MementoMoriItem extends HoeItem {
                         double pz = player.getZ() + (anim.radius - 1.0 + offset) * Math.sin(a);
 
                         if(sw.random.nextFloat() < 0.15F){
-                            sw.spawnParticles(ParticleTypes.SOUL, px, y, pz, 1, 0.02, 0.02, 0.02, 0.0);
+                            sw.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, px, y, pz, 1, 0.02, 0.02, 0.02, 0.0);
                         }
                         if(sw.random.nextFloat() < 0.15F){
                             sw.spawnParticles(ParticleTypes.SMOKE, px, y, pz, 1, 0.02, 0.02, 0.02, 0.0);
@@ -164,7 +200,7 @@ public class MementoMoriItem extends HoeItem {
 
                     sw.spawnParticles(ParticleTypes.SMOKE, newPos.x, newPos.y, newPos.z, 1, 0.05, 0.05, 0.05, 0.0);
                     if (sw.random.nextFloat() < 0.2f) {
-                        sw.spawnParticles(ParticleTypes.SOUL, newPos.x, newPos.y, newPos.z, 1, 0, 0, 0, 0);
+                        sw.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, newPos.x, newPos.y, newPos.z, 1, 0, 0, 0, 0);
                     }
 
                     newParticles.add(newPos);
@@ -187,7 +223,7 @@ public class MementoMoriItem extends HoeItem {
 
                 if (ticks <= 0) {
                     setReaperState(player.getMainHandStack(), false);
-                    player.getItemCooldownManager().set(player.getMainHandStack().getItem(), 20 * 60);
+                    player.getMainHandStack().set(ModDataComponentTypes.ULTIMATE_COOLDOWN, 20 * 60); // 1m
                     it.remove();
                 } else {
                     e.setValue(ticks - 1);
@@ -207,15 +243,30 @@ public class MementoMoriItem extends HoeItem {
 
         if(!world.isClient){
             boolean ReaperState = getReaperState(stack);
+            int skillCld = stack.getOrDefault(ModDataComponentTypes.SKILL_COOLDOWN, 0);
+            int ultCld =stack.getOrDefault(ModDataComponentTypes.ULTIMATE_COOLDOWN, 0);
 
-            if(!user.isSneaking()){
+            if(!user.isSneaking()){ // basic right click skill
                 if(ReaperState){
-                    reaperSkill_NoEscape(world, user);
+                    if(!(skillCld > 0)){
+                        reaperSkill_NoEscape(world, user);
+                        stack.set(ModDataComponentTypes.SKILL_COOLDOWN, 20 * 3); // 3s
+                    } else {
+                        if (user instanceof ServerPlayerEntity sp) sp.sendMessage(Text.literal("Skill on Cooldown").formatted(Formatting.GRAY), true);
+                    }
                 } else {
-                    skillOne_DeathMist(world, user);
+                    if(!(skillCld > 0)){
+                        skillOne_DeathMist(world, user);
+                        stack.set(ModDataComponentTypes.SKILL_COOLDOWN, 20 * 10); // 10s
+                    } else {
+                        if (user instanceof ServerPlayerEntity sp) sp.sendMessage(Text.literal("Skill on Cooldown").formatted(Formatting.GRAY), true);
+                    }
                 }
-            } else {
-                skillTwo_DeathPossession(user, stack);
+            } else { // shift + right click ultimate
+                if(!(ultCld > 0)){
+                    skillTwo_DeathPossession(user, stack);
+                    stack.set(ModDataComponentTypes.ABILITY_DURATION, 20 * 30); // 30s
+                }
             }
         }
 
@@ -224,7 +275,9 @@ public class MementoMoriItem extends HoeItem {
 
     // == Skills ==
     private void skillOne_DeathMist(World world, PlayerEntity user) {
-        user.getItemCooldownManager().set(this, 200);
+
+        user.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 20 * 3, 1, false, false, false));
+        user.addStatusEffect(new StatusEffectInstance(StatusEffects.INVISIBILITY, 20 * 3, 0, false, false, false));
 
         Box mistBox = user.getBoundingBox().expand(5.0f);
 
@@ -241,8 +294,8 @@ public class MementoMoriItem extends HoeItem {
 
     private void skillTwo_DeathPossession(PlayerEntity user, ItemStack stack) {
         setReaperState(stack, true);
-        user.addStatusEffect(new StatusEffectInstance(StatusEffects.HASTE, 20 * 30, 1));
-        user.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 20 * 30, 1));
+        user.addStatusEffect(new StatusEffectInstance(StatusEffects.HASTE, 20 * 30, 1, false, false, false));
+        user.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 20 * 30, 1, false, false, false));
 
         ACTIVE_POSSESSIONS.put(user.getUuid(), 20 * 30);
     }
@@ -310,22 +363,34 @@ public class MementoMoriItem extends HoeItem {
     // == Helpers ==
     protected void dealTrueDamage(PlayerEntity user, LivingEntity target) {
         if (user.getWorld().isClient) return;
-        ItemStack stack = user.getMainHandStack();
-        ServerWorld sw = (ServerWorld) user.getWorld();
 
+        ServerWorld sw = (ServerWorld) user.getWorld();
+        ItemStack stack = user.getMainHandStack();
+
+        // Base + enchantments
         float baseDamage = (float) user.getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
         float enchBonus = EnchantmentHelper.getDamage(sw, stack, target, user.getDamageSources().playerAttack(user), baseDamage);
         float totalDamage = (baseDamage + enchBonus);
 
+        // Critical check
+        boolean crit = user.fallDistance > 0.0F && !user.isOnGround() && !user.isClimbing()
+                && !user.isTouchingWater() && !user.hasStatusEffect(StatusEffects.BLINDNESS)
+                && !user.hasVehicle() && !user.isSprinting();
+        if (crit) totalDamage *= 1.5F;
+
+        // Fire aspect
         ItemEnchantmentsComponent enchComp = stack.getOrDefault(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
-        RegistryEntry<Enchantment> fireAspectEntry = sw.getRegistryManager().get(RegistryKeys.ENCHANTMENT).entryOf(Enchantments.FIRE_ASPECT);
-        int fireLevel = enchComp.getLevel(fireAspectEntry);
+        int fireLevel = enchComp.getLevel(sw.getRegistryManager().get(RegistryKeys.ENCHANTMENT).entryOf(Enchantments.FIRE_ASPECT));
         if (fireLevel > 0) target.setOnFireFor(4 * fireLevel);
 
-        DamageSource src = user.getDamageSources().magic();
+        // Deal damage
+        DamageSource src = user.getDamageSources().outOfWorld();
         target.timeUntilRegen = 0;
         target.damage(src, totalDamage);
         target.timeUntilRegen = 0;
+
+        // Durability
+        stack.damage(1, user, EquipmentSlot.MAINHAND);
     }
 
     private void spawnMistParticles(World world, PlayerEntity user) {
@@ -382,10 +447,6 @@ public class MementoMoriItem extends HoeItem {
             this.radius = radius;
             this.damageRadius = damageRadius;
             this.baseAngle = baseAngle;
-        }
-
-        void dealTrueDamage(PlayerEntity user, LivingEntity target) {
-            source.dealTrueDamage(user, target);
         }
     }
 
