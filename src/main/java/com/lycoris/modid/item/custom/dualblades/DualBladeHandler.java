@@ -1,6 +1,5 @@
 package com.lycoris.modid.item.custom.dualblades;
 
-import com.lycoris.modid.item.custom.dualblades.LucidityItem;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
@@ -79,7 +78,7 @@ public class DualBladeHandler {
         });
 
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (!world.isClient && hasDualBlades(player)) {
+            if (!world.isClient && hasDualBlades(player) && !player.isSneaking()) {
                 handleLeftClick(player, hand);
                 return ActionResult.FAIL;
             }
@@ -87,14 +86,15 @@ public class DualBladeHandler {
         });
 
         AttackBlockCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (!world.isClient) {
+            if (!world.isClient && hasDualBlades(player) && !player.isSneaking()) {
                 handleLeftClick(player, hand);
+                return ActionResult.FAIL;
             }
             return ActionResult.PASS;
         });
 
         UseItemCallback.EVENT.register((player, world, hand) -> {
-            if (!world.isClient) {
+            if (!world.isClient && hasDualBlades(player) && !player.isSneaking()) {
                 handleRightClick(player, hand);
             }
             return TypedActionResult.pass(player.getStackInHand(hand));
@@ -150,6 +150,21 @@ public class DualBladeHandler {
             data.reset(player);
         }
         activeCombos.put(id, data);
+    }
+
+    public static void extendComboWindow(PlayerEntity player, Hand hand, long windowMs) {
+        UUID id = player.getUuid();
+        ComboData data = activeCombos.getOrDefault(id, new ComboData());
+        clearLockout(player); // ensure lockout doesn’t block
+
+        data.advanceComboWithWindow(player, hand, windowMs);
+        activeCombos.put(id, data);
+    }
+
+    public static void clearLockout(PlayerEntity player) {
+        UUID id = player.getUuid();
+        comboLockout.remove(id);
+        cooldownAnnounce.remove(id);
     }
 
     // === Damage + Arc ===
@@ -298,7 +313,7 @@ public class DualBladeHandler {
         }
     }
 
-    private static class ComboData {
+    public static class ComboData {
         private String expected = "LEFT";
         private int successCount = 0;
         private long expireTime = 0;
@@ -313,8 +328,8 @@ public class DualBladeHandler {
         public void advanceCombo(PlayerEntity player, Hand hand) {
             successCount++;
             lastUsedHand = hand;
-
             long windowMs;
+
             if (successCount >= 3) {
                 enterFlowState(player);
             }
@@ -337,6 +352,25 @@ public class DualBladeHandler {
 
             lastAnnounce = -1;
         }
+
+        public void advanceComboWithWindow(PlayerEntity player, Hand hand, long customWindow) {
+            successCount++;
+            lastUsedHand = hand;
+
+            if (successCount >= 3) {
+                enterFlowState(player);
+            }
+
+            expireTime = System.currentTimeMillis() + customWindow;
+            expected = Math.random() < 0.5 ? "LEFT" : "RIGHT";
+
+            player.sendMessage(Text.literal("Combo : " + successCount +
+                            " || Next : " + expected + " (" + formatTime(customWindow) + ")")
+                    .formatted(Formatting.GOLD), true);
+
+            lastAnnounce = -1;
+        }
+
 
         public void reset(PlayerEntity player) {
             expected = "LEFT";
@@ -383,5 +417,6 @@ public class DualBladeHandler {
         public boolean isInFlow() {
             return successCount >= 3 && expireTime > System.currentTimeMillis();
         }
+
     }
 }

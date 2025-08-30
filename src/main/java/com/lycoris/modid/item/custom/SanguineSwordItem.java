@@ -116,7 +116,6 @@ public class SanguineSwordItem extends SwordItem {
                 }
             }
 
-
             // --- Handle delayed explosion from skill three ---
             for (Iterator<Map.Entry<UUID, DelayedExplosion>> it = SKILL_THREE_DELAYED_ATTACK.entrySet().iterator(); it.hasNext();) {
                 Map.Entry<UUID, DelayedExplosion> entry = it.next();

@@ -13,12 +13,15 @@ public class DelusionItem extends SwordItem {
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         if (!world.isClient) {
-            // Forward the event to your DualBladeHandler
-            DualBladeHandler.handleRightClick(user, hand);
+            if (user.isSneaking()) {
+
+            }
         }
 
         return TypedActionResult.pass(user.getStackInHand(hand));
     }
+
+
 
     public DelusionItem(ToolMaterial toolMaterial, Settings settings) {
         super(toolMaterial, settings);
