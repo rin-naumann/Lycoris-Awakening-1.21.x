@@ -161,21 +161,27 @@ public class LucidityItem extends SwordItem {
                 }
 
                 seq.ticks++;
-                if (seq.ticks >= seq.delay) {
-                    seq.ticks = 0;
+                if (seq.index < seq.steps.size()) {
+                    EclipseStep step = seq.steps.get(seq.index);
 
-                    String dir = (seq.done % 2 == 0) ? "LEFT" : "RIGHT";
-                    triggerArcAttack(player, dir);
+                    if (seq.ticks >= step.delay) {
+                        seq.ticks = 0;
 
-                    seq.done++;
+                        if ("X".equals(step.dir)) {
+                            // Cross slash → spawn both at once
+                            triggerArcAttack(player, "RIGHT",  step.tiltDeg, 0);
+                            triggerArcAttack(player, "LEFT",  -step.tiltDeg, 0);
+                        } else {
+                            triggerArcAttack(player, step.dir, step.tiltDeg, 0);
+                        }
 
-                    // new random delay for the next swing (5–10 ticks)
-                    seq.delay = 5 + player.getWorld().random.nextInt(6);
-
-                    if (seq.done >= seq.totalHits) {
-                        it.remove();
+                        seq.index++;
+                        if (seq.index >= seq.steps.size()) {
+                            it.remove(); // Sequence finished
+                        }
                     }
                 }
+
             }
 
             // --- Handle Eclipse Arc Animations (visual only)
@@ -185,6 +191,11 @@ public class LucidityItem extends SwordItem {
 
                 ServerPlayerEntity player = server.getPlayerManager().getPlayer(e.getKey());
                 if (player == null || !player.isAlive()) { it.remove(); continue; }
+
+                if (anim.startDelay > 0) {
+                    anim.startDelay--;
+                    continue;
+                }
 
                 boolean stillAlive = animateEclipse(player, anim);
                 if (!stillAlive) {
@@ -263,7 +274,34 @@ public class LucidityItem extends SwordItem {
         if (!(user instanceof ServerPlayerEntity)) return;
 
         UUID id = user.getUuid();
-        ECLIPSE_SEQUENCE.put(id, new EclipseSeq(world));
+
+        List<EclipseStep> steps = List.of(
+                new EclipseStep("R",  20, 10),
+                new EclipseStep("R", -40,  7),
+                new EclipseStep("L",  20, 10),
+                new EclipseStep("L", -40,  7),
+                new EclipseStep("R", -65,  6),
+                new EclipseStep("L", -65,  6),
+                new EclipseStep("X",  80, 10),
+                new EclipseStep("X", -45, 10),
+                new EclipseStep("R", -60, 10),
+                new EclipseStep("L", -40,  5),
+                new EclipseStep("R", -20,  5),
+                new EclipseStep("L", -60, 10),
+                new EclipseStep("R", -40,  5),
+                new EclipseStep("L", -20,  5),
+                new EclipseStep("X",  80, 10),
+                new EclipseStep("L", -70,  8),
+                new EclipseStep("L", -40,  8),
+                new EclipseStep("L", -10,  8),
+                new EclipseStep("R", -70,  8),
+                new EclipseStep("R", -40,  8),
+                new EclipseStep("R", -10,  8),
+                new EclipseStep("L",  90, 10),
+                new EclipseStep("X", -45,  5)
+        );
+
+        ECLIPSE_SEQUENCE.put(id, new EclipseSeq(steps));
     }
 
     // Helpers
@@ -294,7 +332,7 @@ public class LucidityItem extends SwordItem {
         stack.damage(1, user, EquipmentSlot.MAINHAND);
     }
 
-    private static void triggerArcAttack(PlayerEntity user, String dir) {
+    private static void triggerArcAttack(PlayerEntity user, String dir, double tiltDeg, int delay) {
         if (!(user.getWorld() instanceof ServerWorld sw)) return;
 
         double attackRadius = 6.0;
@@ -321,18 +359,21 @@ public class LucidityItem extends SwordItem {
             }
         }
 
-        spawnEclipseArc(user, dir);
+        // Spawn animation
+        double tilt = Math.toRadians(tiltDeg);
+        spawnEclipseArc(user, dir, tilt, delay);
 
+        // Short nudge forward
         Vec3d dash = look.multiply(0.25);
         user.addVelocity(dash.x, 0, dash.z);
         user.velocityModified = true;
     }
 
-    private static void spawnEclipseArc(PlayerEntity user, String dir) {
+    private static void spawnEclipseArc(PlayerEntity user, String dir, double tiltDeg, int delay) {
         if (!(user.getWorld() instanceof ServerWorld sw)) return;
 
         double baseYaw = Math.toRadians(user.getYaw());
-        double randomTilt = Math.toRadians(-45 + sw.random.nextInt(91));
+        double tilt = Math.toRadians(tiltDeg);
 
         double sweepRange = Math.PI;
         double offset = Math.toRadians(90);
@@ -346,7 +387,7 @@ public class LucidityItem extends SwordItem {
         }
 
         ACTIVE_ECLIPSE.put(user.getUuid(),
-                new EclipseAnim(start, end, 3.5, 5, randomTilt, baseYaw));
+                new EclipseAnim(start, end, 3.5, 5, tilt, baseYaw, delay));
     }
 
     private static boolean animateEclipse(PlayerEntity player, EclipseAnim anim) {
@@ -448,8 +489,9 @@ public class LucidityItem extends SwordItem {
         public int ticksLeft;
         public final double tilt;
         public final double baseYaw;
+        public int startDelay;
 
-        public EclipseAnim(double start, double end, double radius, int totalTicks, double tilt, double baseYaw) {
+        public EclipseAnim(double start, double end, double radius, int totalTicks, double tilt, double baseYaw, int startDelay) {
             this.start = start;
             this.end = end;
             this.radius = radius;
@@ -457,17 +499,29 @@ public class LucidityItem extends SwordItem {
             this.ticksLeft = totalTicks;
             this.tilt = tilt;
             this.baseYaw = baseYaw;
+            this.startDelay = startDelay;
         }
     }
 
     public static class EclipseSeq {
-        int totalHits = 27;
-        int delay;
+        int index = 0;
         int ticks = 0;
-        int done = 0;
+        List<EclipseStep> steps;
 
-        EclipseSeq(World world) {
-            this.delay = 5 + world.random.nextInt(6);
+        public EclipseSeq(List<EclipseStep> steps) {
+            this.steps = steps;
+        }
+    }
+
+    public static class EclipseStep {
+        String dir;     // "R", "L", "X"
+        double tiltDeg; // positive = up, negative = down
+        int delay;      // ticks before slash triggers
+
+        public EclipseStep(String dir, double tiltDeg, int delay) {
+            this.dir = dir;
+            this.tiltDeg = tiltDeg;
+            this.delay = delay;
         }
     }
 
