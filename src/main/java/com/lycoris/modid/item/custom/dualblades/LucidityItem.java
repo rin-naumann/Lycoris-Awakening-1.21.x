@@ -43,7 +43,7 @@ public class LucidityItem extends SwordItem {
     // Maps
     private static final Map<UUID, DashData> PLAYER_DASH = new ConcurrentHashMap<>();
     private static final Map<UUID, SlashAnim> ACTIVE_SLASHES = new ConcurrentHashMap<>();
-    private static final Map<UUID, EclipseAnim> ACTIVE_ECLIPSE = new ConcurrentHashMap<>();
+    private static final Map<UUID, List<EclipseAnim>> ACTIVE_ECLIPSE = new ConcurrentHashMap<>();
     private static final Map<UUID, EclipseSeq> ECLIPSE_SEQUENCE = new ConcurrentHashMap<>();
 
     // Server Tick Handling
@@ -166,13 +166,14 @@ public class LucidityItem extends SwordItem {
 
                     if (seq.ticks >= step.delay) {
                         seq.ticks = 0;
-
                         if ("X".equals(step.dir)) {
                             // Cross slash → spawn both at once
-                            triggerArcAttack(player, "RIGHT",  step.tiltDeg, 0);
-                            triggerArcAttack(player, "LEFT",  -step.tiltDeg, 0);
-                        } else {
-                            triggerArcAttack(player, step.dir, step.tiltDeg, 0);
+                            triggerArcAttack(player, "RIGHT", -step.tiltDeg, 0);
+                            triggerArcAttack(player, "LEFT", step.tiltDeg, 0);
+                        } else if("R".equals(step.dir)){
+                            triggerArcAttack(player, "RIGHT", -step.tiltDeg, 0);
+                        } else if("L".equals(step.dir)){
+                            triggerArcAttack(player, "LEFT", step.tiltDeg, 0);
                         }
 
                         seq.index++;
@@ -185,23 +186,30 @@ public class LucidityItem extends SwordItem {
             }
 
             // --- Handle Eclipse Arc Animations (visual only)
-            for (Iterator<Map.Entry<UUID, EclipseAnim>> it = ACTIVE_ECLIPSE.entrySet().iterator(); it.hasNext();) {
-                Map.Entry<UUID, EclipseAnim> e = it.next();
-                EclipseAnim anim = e.getValue();
+            for (Iterator<Map.Entry<UUID, List<EclipseAnim>>> it = ACTIVE_ECLIPSE.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<UUID, List<EclipseAnim>> e = it.next();
+                UUID playerId = e.getKey();
+                List<EclipseAnim> anims = e.getValue();
 
-                ServerPlayerEntity player = server.getPlayerManager().getPlayer(e.getKey());
-                if (player == null || !player.isAlive()) { it.remove(); continue; }
-
-                if (anim.startDelay > 0) {
-                    anim.startDelay--;
+                ServerPlayerEntity player = server.getPlayerManager().getPlayer(playerId);
+                if (player == null || !player.isAlive()) {
+                    it.remove();
                     continue;
                 }
 
-                boolean stillAlive = animateEclipse(player, anim);
-                if (!stillAlive) {
+                anims.removeIf(anim -> {
+                    if (anim.startDelay > 0) {
+                        anim.startDelay--;
+                        return false;
+                    }
+                    return !animateEclipse(player, anim);
+                });
+
+                if (anims.isEmpty()) {
                     it.remove();
                 }
             }
+
         });
     }
 
@@ -276,29 +284,29 @@ public class LucidityItem extends SwordItem {
         UUID id = user.getUuid();
 
         List<EclipseStep> steps = List.of(
-                new EclipseStep("R",  20, 10),
-                new EclipseStep("R", -40,  7),
-                new EclipseStep("L",  20, 10),
-                new EclipseStep("L", -40,  7),
-                new EclipseStep("R", -65,  6),
-                new EclipseStep("L", -65,  6),
-                new EclipseStep("X",  80, 10),
-                new EclipseStep("X", -45, 10),
-                new EclipseStep("R", -60, 10),
-                new EclipseStep("L", -40,  5),
-                new EclipseStep("R", -20,  5),
-                new EclipseStep("L", -60, 10),
-                new EclipseStep("R", -40,  5),
-                new EclipseStep("L", -20,  5),
-                new EclipseStep("X",  80, 10),
-                new EclipseStep("L", -70,  8),
-                new EclipseStep("L", -40,  8),
-                new EclipseStep("L", -10,  8),
-                new EclipseStep("R", -70,  8),
-                new EclipseStep("R", -40,  8),
-                new EclipseStep("R", -10,  8),
-                new EclipseStep("L",  90, 10),
-                new EclipseStep("X", -45,  5)
+                new EclipseStep("R",  20, 7),
+                new EclipseStep("R", -40,  4),
+                new EclipseStep("L",  20, 7),
+                new EclipseStep("L", -40,  4),
+                new EclipseStep("R", -65,  3),
+                new EclipseStep("L", -65,  3),
+                new EclipseStep("X",  80, 7),
+                new EclipseStep("X", -45, 7),
+                new EclipseStep("R", -60, 7),
+                new EclipseStep("L", -40,  2),
+                new EclipseStep("R", -20,  2),
+                new EclipseStep("L", -60, 7),
+                new EclipseStep("R", -40,  2),
+                new EclipseStep("L", -20,  2),
+                new EclipseStep("X",  80, 7),
+                new EclipseStep("L", -70,  4),
+                new EclipseStep("L", -40,  4),
+                new EclipseStep("L", -10,  4),
+                new EclipseStep("R", -70,  4),
+                new EclipseStep("R", -40,  4),
+                new EclipseStep("R", -10,  4),
+                new EclipseStep("L",  90, 7),
+                new EclipseStep("X", -45,  7)
         );
 
         ECLIPSE_SEQUENCE.put(id, new EclipseSeq(steps));
@@ -360,8 +368,7 @@ public class LucidityItem extends SwordItem {
         }
 
         // Spawn animation
-        double tilt = Math.toRadians(tiltDeg);
-        spawnEclipseArc(user, dir, tilt, delay);
+        spawnEclipseArc(user, dir, tiltDeg, delay);
 
         // Short nudge forward
         Vec3d dash = look.multiply(0.25);
@@ -386,8 +393,9 @@ public class LucidityItem extends SwordItem {
             end = tmp;
         }
 
-        ACTIVE_ECLIPSE.put(user.getUuid(),
-                new EclipseAnim(start, end, 3.5, 5, tilt, baseYaw, delay));
+        ACTIVE_ECLIPSE
+                .computeIfAbsent(user.getUuid(), k -> new java.util.ArrayList<>())
+                .add(new EclipseAnim(start, end, 3.5, 5, tilt, baseYaw, delay));
     }
 
     private static boolean animateEclipse(PlayerEntity player, EclipseAnim anim) {
@@ -401,7 +409,7 @@ public class LucidityItem extends SwordItem {
         double arcHalfWidth = Math.toRadians(24);
         int samples = 48;
 
-        double yBase = player.getBodyY(0.9);
+        double yBase = player.getBodyY(0.5);
         Vec3d look = player.getRotationVec(1.0F).normalize();
         double forwardOffset = 0.6;
         double cx = player.getX() + look.x * forwardOffset;

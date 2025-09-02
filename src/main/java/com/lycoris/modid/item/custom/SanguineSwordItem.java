@@ -3,6 +3,7 @@ package com.lycoris.modid.item.custom;
 import com.lycoris.modid.component.ModDataComponentTypes;
 import com.lycoris.modid.sound.ModSounds;
 import com.lycoris.modid.util.CooldownBarManager;
+import com.lycoris.modid.util.WeaponAttackManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
@@ -35,7 +36,6 @@ import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 public class SanguineSwordItem extends SwordItem {
 
@@ -44,7 +44,6 @@ public class SanguineSwordItem extends SwordItem {
     private static final String ULT_NAME   = "Crimson Fireworks";
 
     // === Runtime State ===
-    private static final Map<UUID, DashData> PLAYER_DASH = new ConcurrentHashMap<>();
     private static final Map<UUID, DelayedExplosion> SKILL_THREE_DELAYED_ATTACK = new ConcurrentHashMap<>();
     private static final Map<UUID, PullData> ENTITY_PULL = new ConcurrentHashMap<>();
 
@@ -71,48 +70,6 @@ public class SanguineSwordItem extends SwordItem {
                     CooldownBarManager.removeBar(player, SKILL_NAME);
                     CooldownBarManager.removeBar(player, ULT_NAME);
 
-                }
-            }
-
-            // --- Handle dash movement + trail ---
-            for (Iterator<Map.Entry<UUID, DashData>> it = PLAYER_DASH.entrySet().iterator(); it.hasNext();) {
-                Map.Entry<UUID, DashData> entry = it.next();
-                DashData dash = entry.getValue();
-                ServerPlayerEntity player = server.getPlayerManager().getPlayer(entry.getKey());
-
-                if (player != null) {
-                    Vec3d velocity = player.getVelocity();
-                    boolean stillMovingFast = velocity.horizontalLength() > 0.13; // sprint cutoff
-
-                    if (dash.ticksLeft > 0 || stillMovingFast) {
-                        // Apply dash push only if timer still running
-                        if (dash.ticksLeft > 0) {
-                            Vec3d step = dash.direction.multiply(dash.speed);
-                            player.addVelocity(step.x, step.y * 0.1, step.z);
-                            player.velocityModified = true;
-                            dash.ticksLeft--;
-                        }
-
-                        // Particle trail while timer running OR player still fast
-                        ServerWorld sw = player.getServerWorld();
-                        Box box = player.getBoundingBox().expand(0.2);
-                        spawnBoxParticles(
-                                sw,
-                                new DustParticleEffect(new Vector3f(0.9F, 0.0F, 0.0F), 1.8F),
-                                box,
-                                15, // fewer particles than before
-                                0.05
-                        );
-
-                    } else {
-                        // Dash is fully done → trigger callback once
-                        if (dash.onComplete != null) {
-                            dash.onComplete.accept(player);
-                        }
-                        it.remove();
-                    }
-                } else {
-                    it.remove(); // remove if player not found
                 }
             }
 
@@ -250,25 +207,28 @@ public class SanguineSwordItem extends SwordItem {
 
     // === Skill One: Hemorrhage ===
     private void skillOne_BleedingDash(World world, PlayerEntity user) {
-        if (user instanceof ServerPlayerEntity sp) {
-            sp.sendMessage(Text.literal("Blood Arts: Hemorrhage").formatted(Formatting.RED), true);
-        }
+        if (user instanceof ServerPlayerEntity sp) sp.sendMessage(Text.literal("Blood Arts: Hemorrhage").formatted(Formatting.RED), true);
 
         Vec3d direction = user.getRotationVec(1.0F).normalize();
         Vec3d startPos  = user.getPos();
 
-        PLAYER_DASH.put(user.getUuid(), new DashData(
-                user.getUuid(),
+        assert user instanceof ServerPlayerEntity;
+        WeaponAttackManager.startDash(
+                (ServerPlayerEntity) user,
                 direction,
                 startPos,
                 4,     // ticksLeft
                 1.5,   // speed
+                List.of(
+                        new WeaponAttackManager.ParticleConfig(
+                                new DustParticleEffect(new Vector3f(1.0F, 0.1F, 0.1F), 1.5F),
+                                0.7f,
+                                0.0f,
+                                15
+                        )
+                ),
                 player -> {
-                    DashData dash = PLAYER_DASH.get(player.getUuid());
-                    if (dash == null) return;
-
-                    // Vector from current end position BACK to where we started
-                    Vec3d backToStart = dash.startPos.subtract(player.getPos());
+                    Vec3d backToStart = startPos.subtract(player.getPos());
 
                     // Build a swept box that covers the whole path (start BB union end BB)
                     Box pathBox = player.getBoundingBox()
@@ -281,7 +241,7 @@ public class SanguineSwordItem extends SwordItem {
                         spawnParticles(player.getWorld(), target);
                     }
                 }
-        ));
+        );
 
         // Start SFX
         spawnParticles(world, user);
@@ -291,24 +251,28 @@ public class SanguineSwordItem extends SwordItem {
 
     // === Skill Two: Paralysis ===
     private void skillTwo_BleedingDash(World world, PlayerEntity user) {
-        if (user instanceof ServerPlayerEntity sp)
-            sp.sendMessage(Text.literal("Blood Arts: Paralysis").formatted(Formatting.RED), true);
+        if (user instanceof ServerPlayerEntity sp) sp.sendMessage(Text.literal("Blood Arts: Paralysis").formatted(Formatting.RED), true);
 
         Vec3d direction = user.getRotationVec(1.0F).normalize();
         Vec3d startPos  = user.getPos();
 
-        PLAYER_DASH.put(user.getUuid(), new DashData(
-                user.getUuid(),
+        assert user instanceof ServerPlayerEntity;
+        WeaponAttackManager.startDash(
+                (ServerPlayerEntity) user,
                 direction,
                 startPos,
                 4,   // ticksLeft
                 1.0, // speed
+                List.of(
+                        new WeaponAttackManager.ParticleConfig(
+                                new DustParticleEffect(new Vector3f(1.0F, 0.1F, 0.1F), 1.5F),
+                                0.7f,
+                                0.0f,
+                                15
+                        )
+                ),
                 player -> {
-                    DashData dash = PLAYER_DASH.get(player.getUuid());
-                    if (dash == null) return;
-
-                    // Sweep path
-                    Vec3d backToStart = dash.startPos.subtract(player.getPos());
+                    Vec3d backToStart = startPos.subtract(player.getPos());
                     Box pathBox = player.getBoundingBox()
                             .union(player.getBoundingBox().offset(backToStart))
                             .expand(3);
@@ -320,7 +284,7 @@ public class SanguineSwordItem extends SwordItem {
                         spawnParticles(player.getWorld(), target);
                     }
                 }
-        ));
+        );
 
         spawnParticles(world, user);
         world.playSound(null, user.getX(), user.getY(), user.getZ(),
@@ -329,24 +293,28 @@ public class SanguineSwordItem extends SwordItem {
 
     // === Skill Three: Crimson Fireworks ===
     private void skillThree_BleedingDash(World world, PlayerEntity user) {
-        if (user instanceof ServerPlayerEntity sp)
-            sp.sendMessage(Text.literal("Blood Arts: Crimson Fireworks").formatted(Formatting.DARK_RED), true);
+        if (user instanceof ServerPlayerEntity sp) sp.sendMessage(Text.literal("Blood Arts: Crimson Fireworks").formatted(Formatting.DARK_RED), true);
 
         Vec3d direction = user.getRotationVec(1.0F).normalize();
         Vec3d startPos  = user.getPos();
 
-        PLAYER_DASH.put(user.getUuid(), new DashData(
-                user.getUuid(),
+        assert user instanceof ServerPlayerEntity;
+        WeaponAttackManager.startDash(
+                (ServerPlayerEntity) user,
                 direction,
                 startPos,
                 4,   // ticksLeft
                 1.5, // speed
+                List.of(
+                        new WeaponAttackManager.ParticleConfig(
+                                new DustParticleEffect(new Vector3f(1.0F, 0.1F, 0.1F), 1.5F),
+                                0.7f,
+                                0.0f,
+                                15
+                        )
+                ),
                 player -> {
-                    DashData dash = PLAYER_DASH.get(player.getUuid());
-                    if (dash == null) return;
-
-                    // Sweep path
-                    Vec3d backToStart = dash.startPos.subtract(player.getPos());
+                    Vec3d backToStart = startPos.subtract(player.getPos());
                     Box pathBox = player.getBoundingBox()
                             .union(player.getBoundingBox().offset(backToStart))
                             .expand(2.5); // wider sweep for ultimate
@@ -362,7 +330,7 @@ public class SanguineSwordItem extends SwordItem {
                     freezeEntity(player, 40);
                     SKILL_THREE_DELAYED_ATTACK.put(player.getUuid(), new DelayedExplosion(player.getUuid(), this, 40));
                 }
-        ));
+        );
 
         spawnParticles(world, user);
         world.playSound(null, user.getX(), user.getY(), user.getZ(),
@@ -437,34 +405,7 @@ public class SanguineSwordItem extends SwordItem {
         }
     }
 
-    private static void spawnBoxParticles(ServerWorld sw, DustParticleEffect effect, Box box, int count, double jitter) {
-        for (int i = 0; i < count; i++) {
-            double x = box.minX + sw.getRandom().nextDouble() * (box.maxX - box.minX);
-            double y = box.minY + sw.getRandom().nextDouble() * (box.maxY - box.minY);
-            double z = box.minZ + sw.getRandom().nextDouble() * (box.maxZ - box.minZ);
-            sw.spawnParticles(effect, x, y, z, 1, jitter, jitter, jitter, 0.0);
-        }
-    }
-
     // === Data Classes ===
-    private static class DashData {
-        final UUID playerId;
-        final Vec3d direction;
-        final Vec3d startPos;
-        int ticksLeft;
-        final double speed;
-        final Consumer<ServerPlayerEntity> onComplete;
-
-        DashData(UUID playerId, Vec3d direction, Vec3d startPos, int ticksLeft, double speed,
-                 Consumer<ServerPlayerEntity> onComplete) {
-            this.playerId = playerId;
-            this.direction = direction;
-            this.startPos = startPos;
-            this.ticksLeft = ticksLeft;
-            this.speed = speed;
-            this.onComplete = onComplete;
-        }
-    }
     private static class DelayedExplosion {
         final UUID playerId; final SanguineSwordItem sword; int ticksLeft;
         DelayedExplosion(UUID playerId, SanguineSwordItem sword, int delay) { this.playerId = playerId; this.sword = sword; this.ticksLeft = delay; }

@@ -3,6 +3,7 @@ package com.lycoris.modid.item.custom;
 import com.lycoris.modid.component.ModDataComponentTypes;
 import com.lycoris.modid.effect.ModEffects;
 import com.lycoris.modid.util.CooldownBarManager;
+import com.lycoris.modid.util.WeaponAttackManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
@@ -335,9 +336,23 @@ public class MementoMoriItem extends SwordItem {
         }
 
         double baseAngle = Math.atan2(look.z, look.x);
-        ACTIVE_SLASHES.put(user.getUuid(),
-                new SlashAnim(user.getUuid(), this,
-                        4, 20, 3.0, 4.0, baseAngle));
+        float[] offsets = {-1, 3, 0.3f};
+        WeaponAttackManager.startSpin(
+                (ServerPlayerEntity) user,
+                4,
+                20,
+                3.0,
+                baseAngle,
+                user.getDamageSources().outOfWorld(),
+                offsets,
+                List.of(
+                        new WeaponAttackManager.ParticleConfig(
+                                ParticleTypes.SOUL_FIRE_FLAME, 0.15f, 0.02, 0
+                        ),
+                        new WeaponAttackManager.ParticleConfig(
+                                ParticleTypes.SMOKE, 0.15f, 0.02, 0
+                        )
+                ));
 
         // Start pull cone particle visual
         List<Vec3d> coneParticles = new ArrayList<>();
