@@ -16,13 +16,13 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.lycoris.modid.LycorisAwakening"
+			"com.lycoris.awakening.LycorisAwakening"
 		],
 		"fabric-datagen": [
-			"com.lycoris.modid.LycorisAwakeningDataGenerator"
+			"com.lycoris.awakening.LycorisAwakeningDataGenerator"
 		],
 		"client": [
-			"com.lycoris.modid.LycorisAwakeningClient"
+			"com.lycoris.awakening.LycorisAwakeningClient"
 		]
 	},
 	"mixins": [
