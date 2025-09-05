@@ -1,6 +1,7 @@
 package com.lycoris.awakening.mixin;
 
 import com.lycoris.awakening.client.WeatherClientHandler;
+import com.lycoris.awakening.weather.CustomWeatherType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -25,7 +26,7 @@ public class SanguineMoonSkyMixin {
                                    boolean thickFog,
                                    Runnable fogCallback,
                                    CallbackInfo ci) {
-        if (!WeatherClientHandler.isSanguineMoon()) return;
+        if (!(WeatherClientHandler.getActiveWeather() == CustomWeatherType.SANGUINE_MOON)) return;
 
         // 🔴 Take over completely
         ci.cancel();
@@ -112,7 +113,7 @@ public class SanguineMoonSkyMixin {
                               double cameraY,
                               double cameraZ,
                               CallbackInfo ci) {
-        if (WeatherClientHandler.isSanguineMoon()) {
+        if (WeatherClientHandler.getActiveWeather() == CustomWeatherType.SANGUINE_MOON) {
             ci.cancel(); // no clouds during Sanguine Moon
         }
     }

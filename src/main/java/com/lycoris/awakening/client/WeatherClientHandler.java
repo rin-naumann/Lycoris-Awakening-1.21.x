@@ -11,12 +11,6 @@ public class WeatherClientHandler {
     public static void startWeather(CustomWeatherType type, int ticks) {
         activeWeather = type;
         remainingTicks = ticks;
-
-        // Debug logs
-        System.out.println("[LycorisAwakening] DEBUG: Started weather " + type.getId() + " for " + ticks + " ticks.");
-        MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(
-                Text.of("§e[DEBUG] Weather started: " + type.getId() + " (" + ticks + " ticks)")
-        );
     }
 
     public static void stopWeather() {
@@ -32,11 +26,6 @@ public class WeatherClientHandler {
 
     public static CustomWeatherType getActiveWeather() {
         return activeWeather;
-    }
-
-    // Example: use this in a sky renderer mixin
-    public static boolean isSanguineMoon() {
-        return activeWeather == CustomWeatherType.SANGUINE_MOON;
     }
 
     // Optional ticking to auto-stop

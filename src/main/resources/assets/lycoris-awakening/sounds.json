@@ -1,8 +1,8 @@
 {
-  "sanguine_dash": {
-    "subtitle": "sounds.lycoris-awakening.sanguine_dash",
+  "slash": {
+    "subtitle": "sounds.lycoris-awakening.slash",
     "sounds": [
-      "lycoris-awakening:dash_sfx"
+      "lycoris-awakening:slash"
     ]
   },
   "sanguine_explosion": {

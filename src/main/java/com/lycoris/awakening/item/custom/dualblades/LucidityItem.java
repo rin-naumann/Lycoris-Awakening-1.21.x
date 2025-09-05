@@ -377,8 +377,6 @@ public class LucidityItem extends SwordItem {
     }
 
     private static void spawnEclipseArc(PlayerEntity user, String dir, double tiltDeg, int delay) {
-        if (!(user.getWorld() instanceof ServerWorld sw)) return;
-
         double baseYaw = Math.toRadians(user.getYaw());
         double tilt = Math.toRadians(tiltDeg);
 

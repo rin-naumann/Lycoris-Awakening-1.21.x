@@ -52,7 +52,6 @@ public class MementoMoriItem extends SwordItem {
 
     // --- Enhanced skill runtime ---
     private static final Map<UUID, PullData> ACTIVE_PULLS = new ConcurrentHashMap<>();
-    private static final Map<UUID, SlashAnim> ACTIVE_SLASHES = new ConcurrentHashMap<>();
     private static final Map<UUID, Integer> ACTIVE_POSSESSIONS = new ConcurrentHashMap<>();
     private static final Map<UUID, PullVisual> ACTIVE_PULL_VISUALS = new ConcurrentHashMap<>();
 
@@ -120,69 +119,6 @@ public class MementoMoriItem extends SwordItem {
 
                 pd.ticksLeft--;
                 if (target.squaredDistanceTo(player) < 1.5) it.remove();
-            }
-
-            // --- Slash animations ---
-            for (Iterator<Map.Entry<UUID, SlashAnim>> it = ACTIVE_SLASHES.entrySet().iterator(); it.hasNext();) {
-                Map.Entry<UUID, SlashAnim> e = it.next();
-                SlashAnim anim = e.getValue();
-                ServerPlayerEntity player = server.getPlayerManager().getPlayer(e.getKey());
-                if (player == null || !player.isAlive()) { it.remove(); continue; }
-
-                ServerWorld sw = player.getServerWorld();
-
-                // Wait for start delay
-                if (anim.startDelay > 0) {
-                    anim.startDelay--;
-                    continue;
-                }
-
-                // AoE trigger once
-                if (!anim.aoeDone) {
-                    double aoeRadius = anim.damageRadius;
-                    List<LivingEntity> aoeTargets = sw.getEntitiesByClass(
-                            LivingEntity.class,
-                            player.getBoundingBox().expand(aoeRadius),
-                            t -> t.isAlive() && t != player
-                    );
-                    for (LivingEntity t : aoeTargets) {
-                        anim.source.dealTrueDamage(player, t);
-
-                        StatusEffectInstance prev = t.getStatusEffect(ModEffects.DEATH);
-                        int amp = (prev == null ? 0 : prev.getAmplifier() + 1);
-                        t.addStatusEffect(new StatusEffectInstance(ModEffects.DEATH, 200, amp, false, true));
-                    }
-                    anim.aoeDone = true;
-                }
-
-                // Cinematic spin-slash
-                int tickIndex = anim.totalTicks - anim.ticksLeft;
-                double progress = (double) tickIndex / anim.totalTicks;
-                double angle = anim.baseAngle + progress * (Math.PI * 2.0 * 1);
-
-                double arcHalfWidth = Math.toRadians(60);
-                int samples = 60;
-                double y = player.getBodyY(0.5);
-
-                for (int s = 0; s < samples; s++) {
-                    double t = (s / (double)(samples - 1)) * 2.0 - 1.0;
-                    double a = angle + t * arcHalfWidth;
-
-                    for (double offset = -1; offset <= 3; offset += 0.3) {
-                        double px = player.getX() + (anim.radius - 1.0 + offset) * Math.cos(a);
-                        double pz = player.getZ() + (anim.radius - 1.0 + offset) * Math.sin(a);
-
-                        if(sw.random.nextFloat() < 0.15F){
-                            sw.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, px, y, pz, 1, 0.02, 0.02, 0.02, 0.0);
-                        }
-                        if(sw.random.nextFloat() < 0.15F){
-                            sw.spawnParticles(ParticleTypes.SMOKE, px, y, pz, 1, 0.02, 0.02, 0.02, 0.0);
-                        }
-                    }
-                }
-
-                anim.ticksLeft--;
-                if (anim.ticksLeft <= 0) it.remove();
             }
 
             // --- Pull cone visual ---
@@ -352,7 +288,8 @@ public class MementoMoriItem extends SwordItem {
                         new WeaponAttackManager.ParticleConfig(
                                 ParticleTypes.SMOKE, 0.15f, 0.02, 0
                         )
-                ));
+                ),
+                ModEffects.DEATH);
 
         // Start pull cone particle visual
         List<Vec3d> coneParticles = new ArrayList<>();
@@ -437,31 +374,6 @@ public class MementoMoriItem extends SwordItem {
             this.playerId = playerId;
             this.ticksLeft = ticksLeft;
             this.perTickStrength = perTickStrength;
-        }
-    }
-
-    private static class SlashAnim {
-        final UUID playerId;
-        final MementoMoriItem source;
-        int ticksLeft;
-        final int totalTicks;
-        final double radius;
-        final double damageRadius;
-        final double baseAngle;
-        int startDelay;
-        boolean aoeDone = false;
-
-        SlashAnim(UUID playerId, MementoMoriItem source,
-                  int totalTicks, int startDelay, double radius,
-                  double damageRadius, double baseAngle) {
-            this.playerId = playerId;
-            this.source = source;
-            this.totalTicks = totalTicks;
-            this.ticksLeft = totalTicks;
-            this.startDelay = startDelay;
-            this.radius = radius;
-            this.damageRadius = damageRadius;
-            this.baseAngle = baseAngle;
         }
     }
 

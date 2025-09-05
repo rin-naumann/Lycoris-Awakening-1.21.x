@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier;
 
 public class ModSounds {
 
-    public static final SoundEvent SANGUINE_DASH = registerSoundEvent("sanguine_dash");
+    public static final SoundEvent SLASH = registerSoundEvent("slash");
     public static final SoundEvent SANGUINE_EXPLOSION = registerSoundEvent("sanguine_explosion");
 
     private static SoundEvent registerSoundEvent(String name) {
